@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import Scale
 from PIL import ImageTk, Image
+from tkinter import colorchooser
 
 root = Tk()
 root.attributes("-fullscreen", False)
@@ -15,9 +16,10 @@ class Paint:
     text = IntVar()
     bold = IntVar()
     italic = IntVar()
-    x_pos, y_pos = None, None
-    x_start, y_start, x_final, y_final = None, None, None, None
-    control = "up"
+    x_start, y_start, x_final, y_final = 0, 0, 0, 0
+    rect_id = 0
+    oval_id = 0
+    line_id = 0
 
     @staticmethod
     def quit():
@@ -77,7 +79,8 @@ class Paint:
         root.config(menu=menu)
 
     def __init__(self):
-
+        self.my_label = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black', anchor=W)
+        self.my_label.pack(side=BOTTOM, fill=X)
         self.menu_bar()
         self.pen_color = "black"
         self.color_fill = LabelFrame(root, text="Color", font=("Times", 15, "bold"), bd=5, relief=RIDGE, bg="white")
@@ -98,6 +101,16 @@ class Paint:
         self.eraser_btn = Button(root, image=self.eraser_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                  relief=RAISED, bd=3, command=self.eraser)
         self.eraser_btn.place(x=0, y=187)
+        self.pencil_img = ImageTk.PhotoImage(
+            Image.open("Pictures/pencil1.png.").resize((20, 20), Image.ANTIALIAS))
+        self.pencil_btn = Button(root, image=self.pencil_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                                 relief=RAISED, bd=3, command=self.pencil)
+        self.pencil_btn.place(x=0, y=515)
+        self.line_img = ImageTk.PhotoImage(
+            Image.open("Pictures/line.png").resize((20, 20), Image.ANTIALIAS))
+        self.line_but = Button(root, image=self.line_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                               relief=RAISED, bd=3, command=self.draw_line)
+        self.line_but.place(x=37, y=515)
         self.colorbox_img = ImageTk.PhotoImage(
             Image.open("Pictures/bucket.jpg").resize((25, 20), Image.ANTIALIAS))
         self.colorbox_btn = Button(root, image=self.colorbox_img, fg="red", bg="white", font=("Arial", 10, "bold"),
@@ -106,7 +119,7 @@ class Paint:
         self.clear = Button(root, text="Clear", bd=4, bg="white", width=8, relief=RIDGE,
                             command=lambda: self.canvas.delete("all"))
         self.clear.place(x=0, y=217)
-        self.canvas = Button(root, text="Canvas", bd=4, bg="white", width=8, relief=RIDGE, command=None)
+        self.canvas = Button(root, text="Canvas", bd=4, bg="white", width=8, relief=RIDGE, command=self.canvas_bg)
         self.canvas.place(x=0, y=247)
         # CREATING SIZE FOR PENCIL AND ERASER
         self.pen_size = LabelFrame(root, text="Size", bd=5, bg="white", font=("Times", 15, "bold"), relief=RIDGE)
@@ -120,13 +133,13 @@ class Paint:
         self.shapes.place(x=0, y=430)
         self.rectangle_img = ImageTk.PhotoImage(Image.open("Pictures/rectangle.jpg").resize((20, 20), Image.ANTIALIAS))
         self.rec = Button(root, image=self.rectangle_img, fg="red", bg="white",
-                          font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=None)
+                          font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_rectangle)
         self.rec.place(x=0, y=455)
 
         self.circle_img = ImageTk.PhotoImage(
             Image.open("Pictures/circle.png").resize((20, 20), Image.ANTIALIAS))
         self.circle_btn = Button(root, image=self.circle_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                 relief=RAISED, bd=3, command=None)
+                                 relief=RAISED, bd=3, command=self.draw_oval)
         self.circle_btn.place(x=0, y=485)
 
         assert isinstance(Image.open("Pictures/triangle.jpg").resize, object)
@@ -144,25 +157,131 @@ class Paint:
         self.canvas.bind("<B1-Motion>", self.paint_app)
         self.canvas.bind("<Motion>", self.coordinates)
 
-        # status bar
-        self.status = Label(relief=RIDGE, font='Times 13 bold', bg='white', fg='black', anchor=W)
-        self.status.pack(side=BOTTOM, fill=X)
-
     def paint_app(self, event):
         x_start, y_start = (event.x - 2), (event.y - 2)
         x_final, y_final = (event.x + 2), (event.y + 2)
 
-        self.canvas.create_oval(x_start, y_start, x_final, y_final, fill=self.pen_color, outline=self.pen_color,
-                                width=self.pen_size1.get())
+        self.canvas.create_oval(x_start, y_start, x_final, y_final, outline=self.pen_color,
+                                fill=self.pen_color, width=self.pen_size1.get())
 
     def select_color(self, col):
         self.pen_color = col
 
     def eraser(self):
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.bind("<B1-Motion>", self.paint_app)
         self.pen_color = "white"
 
     def coordinates(self, event):
-        self.status['text'] = f'{event.x}, {event.y}px'
+        self.my_label['text'] = f'Cursor coordinates : ({event.x},{event.y})'
+
+    def canvas_bg(self):
+        color = colorchooser.askcolor()
+        self.canvas.configure(background=color[1])
+
+    def draw_rectangle(self):
+
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.bind("<Button-1>", self.start_rect)
+        self.canvas.bind("<ButtonRelease-1>", self.stop_rect)
+        self.canvas.bind("<B1-Motion>", self.moving_rect)
+
+    def start_rect(self, event):
+        # Translate mouse screen x0,y0 coordinates to canvas coordinates
+        self.x_start = self.canvas.canvasx(event.x)
+        self.y_start = self.canvas.canvasy(event.y)
+        # Create rectangle
+        self.rect_id = self.canvas.create_rectangle(
+            self.x_start, self.y_start, self.x_start, self.y_final, outline=self.pen_color, width=self.pen_size1.get())
+
+    def moving_rect(self, event):
+        # Translate mouse screen x1,y1 coordinates to canvas coordinates
+        self.x_final = self.canvas.canvasx(event.x)
+        self.y_final = self.canvas.canvasy(event.y)
+        # Modify rectangle x1, y1 coordinates
+        self.canvas.coords(self.rect_id, self.x_start, self.y_start,
+                           self.x_final, self.y_final)
+
+    def stop_rect(self, event):
+        # Translate mouse screen x1,y1 coordinates to canvas coordinates
+        self.x_final = self.canvas.canvasx(event.x)
+        self.y_final = self.canvas.canvasy(event.y)
+        # Modify rectangle x1, y1 coordinates
+        self.canvas.coords(self.rect_id, self.x_start, self.y_start,
+                           self.x_final, self.y_final)
+
+    def draw_oval(self):
+
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.bind("<Button-1>", self.start_oval)
+        self.canvas.bind("<ButtonRelease-1>", self.stop_oval)
+        self.canvas.bind("<B1-Motion>", self.moving_oval)
+
+    def start_oval(self, event):
+        # Translate mouse screen x0,y0 coordinates to canvas coordinates
+        self.x_start = self.canvas.canvasx(event.x)
+        self.y_start = self.canvas.canvasy(event.y)
+        # Create rectangle
+        self.oval_id = self.canvas.create_oval(
+            self.x_start, self.y_start, self.x_start, self.y_final, outline=self.pen_color, width=self.pen_size1.get())
+
+    def moving_oval(self, event):
+        # Translate mouse screen x1,y1 coordinates to canvas coordinates
+        self.x_final = self.canvas.canvasx(event.x)
+        self.y_final = self.canvas.canvasy(event.y)
+        # Modify rectangle x1, y1 coordinates
+        self.canvas.coords(self.oval_id, self.x_start, self.y_start,
+                           self.x_final, self.y_final)
+
+    def stop_oval(self, event):
+        # Translate mouse screen x1,y1 coordinates to canvas coordinates
+        self.x_final = self.canvas.canvasx(event.x)
+        self.y_final = self.canvas.canvasy(event.y)
+        # Modify rectangle x1, y1 coordinates
+        self.canvas.coords(self.oval_id, self.x_start, self.y_start,
+                           self.x_final, self.y_final)
+
+    def draw_line(self):
+
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.bind("<Button-1>", self.start_line)
+        self.canvas.bind("<ButtonRelease-1>", self.stop_line)
+        self.canvas.bind("<B1-Motion>", self.moving_line)
+
+    def start_line(self, event):
+
+        self.x_start = self.canvas.canvasx(event.x)
+        self.y_start = self.canvas.canvasy(event.y)
+        self.line_id = self.canvas.create_line(self.x_start, self.y_start, self.x_start, self.y_start,
+                                               fill=self.pen_color, width=self.pen_size1.get(), smooth=True,
+                                               capstyle=ROUND)
+
+    def moving_line(self, event):
+        # Translate mouse screen x1,y1 coordinates to canvas coordinates
+        self.x_final = self.canvas.canvasx(event.x)
+        self.y_final = self.canvas.canvasy(event.y)
+
+        self.canvas.coords(self.line_id, self.x_start, self.y_start, self.x_final, self.y_final)
+
+    def stop_line(self, event):
+        self.x_final = self.canvas.canvasx(event.x)
+        self.y_final = self.canvas.canvasy(event.y)
+        # Modify rectangle x1, y1 coordinates
+        self.canvas.coords(self.line_id, self.x_start, self.y_start, self.x_final, self.y_final)
+
+    def pencil(self):
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.bind("<B1-Motion>", self.paint_app)
 
 
 paint = Paint()
