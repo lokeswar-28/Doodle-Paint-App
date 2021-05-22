@@ -4,7 +4,6 @@ from tkinter.ttk import Scale
 from PIL import ImageTk, Image, ImageGrab
 from tkinter import colorchooser
 
-
 root = Tk()
 root.attributes("-fullscreen", False)
 root.title("DOODLE")
@@ -36,14 +35,14 @@ class Paint:
 
     def open_file(self):
         filename = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(
-                                              ("jpeg files", "*.jpg"), ("png files", "*.png")))
+            ("jpeg files", "*.jpg"), ("png files", "*.png")))
         image = Image.open(filename)
         image.save("Temp.png", "png")
         self.canvas.create_image(3, 3, image=self.file_to_open, anchor=NW)
 
     def save_file(self):
         file = filedialog.asksaveasfilename(initialdir="/", title="Select file", filetypes=(
-                                                ("jpeg files", "*.jpg"), ("png files", "*.png")))
+            ("jpeg files", "*.jpg"), ("png files", "*.png")))
         if file:
             x = root.winfo_rootx() + self.canvas.winfo_x()
             y = root.winfo_rooty() + self.canvas.winfo_y()
@@ -186,11 +185,19 @@ class Paint:
         self.canvas.bind("<Motion>", self.coordinates)
 
     def paint_app(self, event):
-        x_start, y_start = (event.x - 2), (event.y - 2)
-        x_final, y_final = (event.x + 2), (event.y + 2)
+        # creates a canvas where you can paint
+        if self.x_start and self.y_start:
+            self.canvas.create_line(self.x_start, self.y_start, event.x, event.y,
+                                    width=self.pen_size1.get(), fill=self.pen_color,
+                                    capstyle=ROUND, smooth=True)
 
-        self.canvas.create_oval(x_start, y_start, x_final, y_final, outline=self.pen_color,
-                                fill=self.pen_color, width=self.pen_size1.get())
+        self.x_start = event.x
+        self.y_start = event.y
+        self.canvas.bind('<ButtonRelease-1>', self.reset)
+
+    def reset(self, event):
+        self.x_start = None
+        self.y_start = None
 
     def select_color(self, col):
         self.pen_color = col
