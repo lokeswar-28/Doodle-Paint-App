@@ -203,7 +203,7 @@ class Paint:
         self.pen_color = "white"
 
     def coordinates(self, event):
-        self.my_label['text'] = f'Cursor coordinates : ({event.x},{event.y})'
+        self.my_label['text'] = f'{event.x},{event.y}px'
 
     def canvas_bg(self):
         color = colorchooser.askcolor()
