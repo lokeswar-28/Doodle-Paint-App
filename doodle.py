@@ -1,8 +1,9 @@
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from tkinter.ttk import Scale
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageGrab
 from tkinter import colorchooser
+
 
 root = Tk()
 root.attributes("-fullscreen", False)
@@ -29,23 +30,34 @@ class Paint:
     def quit():
         root.quit()
 
-
     @staticmethod
     def about():
         messagebox.showinfo('DOODLE', 'Go to the help in the main window')
 
+    def open_file(self):
+        filename = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(
+                                              ("jpeg files", "*.jpg"), ("png files", "*.png")))
+        image = Image.open(filename)
+        image.save("Temp.png", "png")
+        self.canvas.create_image(3, 3, image=self.file_to_open, anchor=NW)
+
+    def save_file(self):
+        file = filedialog.asksaveasfilename(initialdir="/", title="Select file", filetypes=(
+                                                ("jpeg files", "*.jpg"), ("png files", "*.png")))
+        if file:
+            x = root.winfo_rootx() + self.canvas.winfo_x()
+            y = root.winfo_rooty() + self.canvas.winfo_y()
+            x1 = x + self.canvas.winfo_width()
+            y1 = y + self.canvas.winfo_height()
+            ImageGrab.grab().crop((x, y, x1, y1)).save(file + '.png')
+            ImageGrab.grab().crop((x, y, x1, y1)).save(file + '.jpg')
+
     def menu_bar(self):
         menu = Menu(root)
-
         # FILE MENU
         file_menu = Menu(menu, tearoff=0)
-        file_menu.add_command(label="📂 Open")
-        file_menu.add_command(label="📥 Save")
-        file_submenu = Menu(file_menu)
-        file_submenu.add_radiobutton(label="📊 Png")
-        file_submenu.add_radiobutton(label="💷 Jpeg")
-        file_submenu.add_radiobutton(label="🧧 Gif")
-        file_menu.add_cascade(label="💾 Save as", menu=file_submenu)
+        file_menu.add_command(label="📂 Open", command=self.open_file)
+        file_menu.add_command(label="📥 Save", command=self.save_file)
         file_menu.add_separator()
         file_menu.add_command(label="❌ Quit", command=self.quit)
         menu.add_cascade(label="🗂 File", menu=file_menu)
@@ -84,6 +96,7 @@ class Paint:
         root.config(menu=menu)
 
     def __init__(self):
+        self.file_to_open = PhotoImage(file="Temp.png")
         self.my_label = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black', anchor=W)
         self.my_label.pack(side=BOTTOM, fill=X)
         self.menu_bar()
@@ -380,9 +393,9 @@ class Paint:
         self.y_start = self.canvas.canvasy(event.y)
         # Create hexagon
         self.hexagon_id = self.canvas.create_polygon(self.x_start, self.y_start, int(self.x_start), event.y,
-                                                     (int(self.x_start)+int(event.x)) / 2, int(event.y) + 50,
+                                                     (int(self.x_start) + int(event.x)) / 2, int(event.y) + 50,
                                                      event.x, event.y, int(event.x), self.y_start,
-                                                     (self.x_start+event.x) / 2, self.y_start - 50,
+                                                     (self.x_start + event.x) / 2, self.y_start - 50,
                                                      outline=self.pen_color, width=self.pen_size1.get(), fill='white')
 
     def moving_hexagon(self, event):
@@ -391,9 +404,9 @@ class Paint:
         self.y_final = self.canvas.canvasy(event.y)
         # Modify hexagon  x1, y1 coordinates
         self.canvas.coords(self.hexagon_id, self.x_start, self.y_start, int(self.x_start), event.y,
-                           (int(self.x_start)+int(event.x)) / 2,
+                           (int(self.x_start) + int(event.x)) / 2,
                            int(event.y) + 50, event.x, event.y, int(event.x), self.y_start,
-                           (self.x_start+event.x) / 2, self.y_start - 50)
+                           (self.x_start + event.x) / 2, self.y_start - 50)
 
     def stop_hexagon(self, event):
         # Translate mouse screen x1,y1 coordinates to canvas coordinates
@@ -401,9 +414,9 @@ class Paint:
         self.y_final = self.canvas.canvasy(event.y)
         # Modify hexagon x1, y1 coordinates
         self.canvas.coords(self.hexagon_id, self.x_start, self.y_start, int(self.x_start), event.y,
-                           (int(self.x_start)+int(event.x)) / 2,
+                           (int(self.x_start) + int(event.x)) / 2,
                            int(event.y) + 50, event.x, event.y, int(event.x), self.y_start,
-                           (self.x_start+event.x) / 2, self.y_start - 50)
+                           (self.x_start + event.x) / 2, self.y_start - 50)
 
     def draw_parallelogram(self):
 
@@ -419,8 +432,8 @@ class Paint:
         self.x_start = self.canvas.canvasx(event.x)
         self.y_start = self.canvas.canvasy(event.y)
         # Create parallelogram
-        self.parallelogram_id = self.canvas.create_polygon(self.x_start, self.y_start, int(self.x_start)+30, event.y,
-                                                           event.x, event.y, int(event.x)-30, self.y_start,
+        self.parallelogram_id = self.canvas.create_polygon(self.x_start, self.y_start, int(self.x_start) + 30, event.y,
+                                                           event.x, event.y, int(event.x) - 30, self.y_start,
                                                            outline=self.pen_color, width=self.pen_size1.get(),
                                                            fill='white')
 
@@ -429,17 +442,16 @@ class Paint:
         self.x_final = self.canvas.canvasx(event.x)
         self.y_final = self.canvas.canvasy(event.y)
         # Modify parallelogram x1, y1 coordinates
-        self.canvas.coords(self.parallelogram_id, self.x_start, self.y_start, int(self.x_start)+30,
-                           event.y, event.x, event.y, int(event.x)-30, self.y_start)
+        self.canvas.coords(self.parallelogram_id, self.x_start, self.y_start, int(self.x_start) + 30,
+                           event.y, event.x, event.y, int(event.x) - 30, self.y_start)
 
     def stop_parallelogram(self, event):
         # Translate mouse screen x1,y1 coordinates to canvas coordinates
         self.x_final = self.canvas.canvasx(event.x)
         self.y_final = self.canvas.canvasy(event.y)
         # Modify parallelogram x1, y1 coordinates
-        self.canvas.coords(self.parallelogram_id, self.x_start, self.y_start, int(self.x_start)+30,
-                           event.y, event.x, event.y, int(event.x)-30, self.y_start)
-
+        self.canvas.coords(self.parallelogram_id, self.x_start, self.y_start, int(self.x_start) + 30,
+                           event.y, event.x, event.y, int(event.x) - 30, self.y_start)
 
     def pencil(self):
         self.canvas.unbind("<Button-1>")
