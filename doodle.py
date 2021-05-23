@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import messagebox, filedialog
+from tkinter import messagebox, filedialog, PhotoImage
 from tkinter.ttk import Scale
 from PIL import ImageTk, Image, ImageGrab
 from tkinter import colorchooser
@@ -17,6 +17,7 @@ class Paint:
     bold = IntVar()
     italic = IntVar()
     x_start, y_start, x_final, y_final = 0, 0, 0, 0
+    file_to_open: PhotoImage
     rect_id = 0
     oval_id = 0
     line_id = 0
@@ -35,14 +36,16 @@ class Paint:
 
     def open_file(self):
         filename = filedialog.askopenfilename(initialdir="/", title="Select file", filetypes=(
-            ("jpeg files", "*.jpg"), ("png files", "*.png")))
+                                              ("jpeg files", "*.jpg"), ("png files", "*.png")))
         image = Image.open(filename)
         image.save("Temp.png", "png")
+        self.file_to_open = PhotoImage(file="Temp.png")
+        self.canvas.delete("all")
         self.canvas.create_image(3, 3, image=self.file_to_open, anchor=NW)
 
     def save_file(self):
         file = filedialog.asksaveasfilename(initialdir="/", title="Select file", filetypes=(
-            ("jpeg files", "*.jpg"), ("png files", "*.png")))
+                                            ("jpeg files", "*.jpg"), ("png files", "*.png")))
         if file:
             x = root.winfo_rootx() + self.canvas.winfo_x()
             y = root.winfo_rooty() + self.canvas.winfo_y()
@@ -95,7 +98,6 @@ class Paint:
         root.config(menu=menu)
 
     def __init__(self):
-        self.file_to_open = PhotoImage(file="Temp.png")
         self.my_label = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black', anchor=W)
         self.my_label.pack(side=BOTTOM, fill=X)
         self.menu_bar()
