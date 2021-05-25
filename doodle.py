@@ -88,6 +88,16 @@ class Paint:
     def __init__(self):
         self.status_bar = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black', anchor=W)
         self.status_bar.pack(side=BOTTOM, fill=X)
+        self.zoom_in_img = ImageTk.PhotoImage(
+            Image.open("Pictures/zoom in.png").resize((25, 20), Image.ANTIALIAS))
+        self.zoom_in = Button( image=self.zoom_in_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                             relief=RAISED, bd=3, command=lambda: self.zoom_control(1))
+        self.zoom_in.place(x=1315, y=600)
+        self.zoom_out_img = ImageTk.PhotoImage(
+            Image.open("Pictures/zoom out.png").resize((25, 20), Image.ANTIALIAS))
+        self.zoom_out = Button(image=self.zoom_out_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                              relief=RAISED, bd=3, command=lambda: self.zoom_control(0))
+        self.zoom_out.place(x=1275, y=600)
         self.menu_bar()
         self.pen_color = "black"
         self.color_fill = LabelFrame(root,  bd=5, relief=RIDGE, bg="white")
@@ -128,6 +138,7 @@ class Paint:
         self.clear.place(x=0, y=197)
         self.canvas = Button(root, text="Canvas", bd=4, bg="white", width=8, relief=RIDGE, command=self.canvas_bg)
         self.canvas.place(x=0, y=227)
+
         # CREATING SIZE FOR PENCIL AND ERASER
         self.pen_size = LabelFrame(root, bd=5, bg="white", relief=RIDGE)
         self.pen_size.place(x=0, y=260, height=130, width=70)
@@ -136,6 +147,12 @@ class Paint:
         self.pen_size1.grid(row=0, column=1, padx=15)
         self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=600, width=1000)
         self.canvas.place(x=80, y=0)
+        self.xsb = Scrollbar(root, orient="horizontal", command=self.canvas.xview)
+        self.ysb = Scrollbar(root, orient="vertical", command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.ysb.set, xscrollcommand=self.xsb.set)
+        self.canvas.configure(scrollregion=(0, 0, 1000, 1000))
+        self.xsb.pack(side=BOTTOM, fill=X)
+        self.ysb.pack(side=RIGHT, fill=Y)
         self.rectangle_img = ImageTk.PhotoImage(Image.open("Pictures/rectangle.png").resize((24, 20), Image.ANTIALIAS))
         self.rec = Button(root, image=self.rectangle_img, fg="red", bg="white",
                           font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_rectangle)
@@ -170,6 +187,7 @@ class Paint:
         # mouse drag
         self.canvas.bind("<B1-Motion>", self.paint_app)
         self.canvas.bind("<Motion>", self.coordinates)
+
 
     def paint_app(self, event):
         if self.x_start and self.y_start:
@@ -453,6 +471,18 @@ class Paint:
     def cancel(self, event):
         self.canvas.unbind('<Button-1>')
         self.canvas.unbind('<Button-3>')
+
+    def zoom_control(self, event):  # For Zoom in and Zoom out
+        try:
+            if event.delta > 0:
+                self.canvas.scale("all", event.x, event.y, 1.1, 1.1)
+            elif event.delta < 0:
+                self.canvas.scale("all", event.x, event.y, 0.9, 0.9)
+        except:
+            if event == 1:
+                self.canvas.scale("all", 550, 350, 1.1, 1.1)
+            else:
+                self.canvas.scale("all", 550, 350, 0.9, 0.9)
 
 
 paint = Paint()
