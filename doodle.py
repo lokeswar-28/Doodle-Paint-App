@@ -74,7 +74,7 @@ class Paint:
 
         # EDIT MENU
         edit_menu = Menu(menu, tearoff=0)
-        edit_menu.add_command(label="Undo", command=self.undo)
+        edit_menu.add_command(label="Undo (Ctrl+Z)", command=self.undo, accelerator="Ctrl+Z")
         edit_menu.add_separator()
         edit_menu.add_command(label="Cut")
         edit_menu.add_command(label="Copy")
@@ -92,6 +92,7 @@ class Paint:
         menu.add_cascade(label="❓ Help", menu=help_menu)
 
         root.config(menu=menu)
+        root.bind("<Control-z>", self.undo)
 
     def __init__(self):
         self.stack = []
@@ -138,11 +139,6 @@ class Paint:
         self.line_but = Button(root, image=self.line_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                relief=RAISED, bd=3, command=self.draw_line)
         self.line_but.place(x=0, y=485)
-        self.undo_img = ImageTk.PhotoImage(
-            Image.open("Pictures/undo.png").resize((24, 20), Image.ANTIALIAS))
-        self.undo_but = Button(root, image=self.undo_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                               relief=RAISED, bd=3, command=self.undo)
-        self.undo_but.place(x=0, y=515)
         self.colorbox_img = ImageTk.PhotoImage(
             Image.open("Pictures/bucket.png").resize((25, 20), Image.ANTIALIAS))
         self.colorbox_btn = Button(root, image=self.colorbox_img, fg="red", bg="white", font=("Arial", 10, "bold"),
@@ -492,10 +488,8 @@ class Paint:
         except:
             if event == 1:
                 self.canvas.scale("all", 550, 350, 1.1, 1.1)
-            else:
-                self.canvas.scale("all", 550, 350, 0.9, 0.9)
 
-    def undo(self):
+    def undo(self, event):
 
         try:
             self.item = self.stack.pop()
