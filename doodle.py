@@ -13,8 +13,15 @@ root.iconphoto(True, Icon)
 
 
 class Paint:
-    x_start, y_start, x_final, y_final = 0, 0, 0, 0
-    file_to_open: PhotoImage
+    # Initialisation
+    x_start, y_start = 0, 0
+    line_x0, line_y0, line_x1, line_y1 = 0, 0, 0, 0
+    rect_x0, rect_y0, rect_x1, rect_y1 = 0, 0, 0, 0
+    oval_x0, oval_y0, oval_x1, oval_y1 = 0, 0, 0, 0
+    pent_x0, pent_y0 = 0, 0
+    hex_x0, hex_y0 = 0, 0
+    parallelogram_x0, parallelogram_y0 = 0, 0
+    tri_x0, tri_y0 = 0, 0
     rect_id = 0
     oval_id = 0
     line_id = 0
@@ -22,6 +29,7 @@ class Paint:
     triangle_id = 0
     hexagon_id = 0
     parallelogram_id = 0
+    file_to_open: PhotoImage
 
     @staticmethod
     def quit():
@@ -34,7 +42,7 @@ class Paint:
     def open_file(self):
         try:
             filename = filedialog.askopenfilename(initialdir="/", filetypes=(
-                                              ("jpeg files", "*.jpg"), ("png files", "*.png")))
+                ("jpeg files", "*.jpg"), ("png files", "*.png")))
             image = Image.open(filename)
             image.save("Temp.png", "png")
             self.file_to_open = PhotoImage(file="Temp.png")
@@ -45,7 +53,7 @@ class Paint:
 
     def save_file(self):
         file = filedialog.asksaveasfilename(initialdir="/", filetypes=(
-                                            ("jpeg files", "*.jpg"), ("png files", "*.png")))
+            ("jpeg files", "*.jpg"), ("png files", "*.png")))
         if file:
             x = root.winfo_rootx() + self.canvas.winfo_x()
             y = root.winfo_rooty() + self.canvas.winfo_y()
@@ -66,7 +74,7 @@ class Paint:
 
         # EDIT MENU
         edit_menu = Menu(menu, tearoff=0)
-        edit_menu.add_command(label="Undo", command=None)
+        edit_menu.add_command(label="Undo", command=self.undo)
         edit_menu.add_separator()
         edit_menu.add_command(label="Cut")
         edit_menu.add_command(label="Copy")
@@ -86,21 +94,23 @@ class Paint:
         root.config(menu=menu)
 
     def __init__(self):
+        self.stack = []
+        self.item = None
         self.status_bar = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black', anchor=W)
         self.status_bar.pack(side=BOTTOM, fill=X)
         self.zoom_in_img = ImageTk.PhotoImage(
             Image.open("Pictures/zoom in.png").resize((25, 20), Image.ANTIALIAS))
-        self.zoom_in = Button( image=self.zoom_in_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                             relief=RAISED, bd=3, command=lambda: self.zoom_control(1))
+        self.zoom_in = Button(image=self.zoom_in_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                              relief=RAISED, bd=3, command=lambda: self.zoom_control(1))
         self.zoom_in.place(x=1315, y=600)
         self.zoom_out_img = ImageTk.PhotoImage(
             Image.open("Pictures/zoom out.png").resize((25, 20), Image.ANTIALIAS))
         self.zoom_out = Button(image=self.zoom_out_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                              relief=RAISED, bd=3, command=lambda: self.zoom_control(0))
+                               relief=RAISED, bd=3, command=lambda: self.zoom_control(0))
         self.zoom_out.place(x=1275, y=600)
         self.menu_bar()
         self.pen_color = "black"
-        self.color_fill = LabelFrame(root,  bd=5, relief=RIDGE, bg="white")
+        self.color_fill = LabelFrame(root, bd=5, relief=RIDGE, bg="white")
         self.color_fill.place(x=0, y=0, width=70, height=165)
         colors = ["#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FFD700", "#FF00FF", "#FFC0CB",
                   "#800080", "#00ffd9", "#808080"]
@@ -128,6 +138,11 @@ class Paint:
         self.line_but = Button(root, image=self.line_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                relief=RAISED, bd=3, command=self.draw_line)
         self.line_but.place(x=0, y=485)
+        self.undo_img = ImageTk.PhotoImage(
+            Image.open("Pictures/undo.png").resize((24, 20), Image.ANTIALIAS))
+        self.undo_but = Button(root, image=self.undo_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                               relief=RAISED, bd=3, command=self.undo)
+        self.undo_but.place(x=0, y=515)
         self.colorbox_img = ImageTk.PhotoImage(
             Image.open("Pictures/bucket.png").resize((25, 20), Image.ANTIALIAS))
         self.colorbox_btn = Button(root, image=self.colorbox_img, fg="red", bg="white", font=("Arial", 10, "bold"),
@@ -186,24 +201,22 @@ class Paint:
 
         # mouse drag
         self.canvas.bind("<B1-Motion>", self.paint_app)
+        self.canvas.bind("<ButtonRelease-1>", self.reset)
         self.canvas.bind("<Motion>", self.coordinates)
-
 
     def paint_app(self, event):
         if self.x_start and self.y_start:
-            self.canvas.create_line(self.x_start, self.y_start, event.x, event.y,
+            self.stack.append(self.canvas.create_line(self.x_start, self.y_start, event.x, event.y,
                                     width=self.pen_size1.get(), fill=self.pen_color,
-                                    capstyle=ROUND, smooth=True)
+                                    capstyle=ROUND, smooth=True))
 
         self.x_start = event.x
         self.y_start = event.y
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def reset(self, event):
         self.x_start = None
         self.y_start = None
-        self.x_final = None
-        self.y_final = None
+        self.stack.append('#')
 
     def select_color(self, col):
         self.pen_color = col
@@ -219,229 +232,226 @@ class Paint:
         self.canvas.configure(background=color[1])
 
     def draw_rectangle(self):
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
         self.canvas.bind("<Button-1>", self.start_rect)
         self.canvas.bind("<ButtonRelease-1>", self.stop_rect)
         self.canvas.bind("<B1-Motion>", self.moving_rect)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def start_rect(self, event):
         # Translate mouse screen x0,y0 coordinates to canvas coordinates
-        self.x_start = self.canvas.canvasx(event.x)
-        self.y_start = self.canvas.canvasy(event.y)
+        self.rect_x0 = self.canvas.canvasx(event.x)
+        self.rect_y0 = self.canvas.canvasy(event.y)
         # Create rectangle
         self.rect_id = self.canvas.create_rectangle(
-            self.x_start, self.y_start, self.x_start, self.y_start, outline=self.pen_color, width=self.pen_size1.get())
+            self.rect_x0, self.rect_y0, self.rect_x0, self.rect_y0, outline=self.pen_color, width=self.pen_size1.get())
 
     def moving_rect(self, event):
         # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
+        self.rect_x1 = self.canvas.canvasx(event.x)
+        self.rect_y1 = self.canvas.canvasy(event.y)
         # Modify rectangle x1, y1 coordinates
-        self.canvas.coords(self.rect_id, self.x_start, self.y_start,
-                           self.x_final, self.y_final)
+        self.canvas.coords(self.rect_id, self.rect_x0, self.rect_y0, self.rect_x1, self.rect_y1)
 
     def stop_rect(self, event):
         # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
+        self.rect_x1 = self.canvas.canvasx(event.x)
+        self.rect_y1 = self.canvas.canvasy(event.y)
         # Modify rectangle x1, y1 coordinates
-        self.canvas.coords(self.rect_id, self.x_final, self.y_final,
-                           self.x_final, self.y_final)
+        self.canvas.coords(self.rect_id, self.rect_x0, self.rect_y0, self.rect_x1, self.rect_y1)
+
+        self.stack.append(self.rect_id)
+        self.stack.append('$')
 
     def draw_oval(self):
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
         self.canvas.bind("<Button-1>", self.start_oval)
         self.canvas.bind("<ButtonRelease-1>", self.stop_oval)
         self.canvas.bind("<B1-Motion>", self.moving_oval)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def start_oval(self, event):
         # Translate mouse screen x0,y0 coordinates to canvas coordinates
-        self.x_start = self.canvas.canvasx(event.x)
-        self.y_start = self.canvas.canvasy(event.y)
-        # Create rectangle
+        self.oval_x0 = self.canvas.canvasx(event.x)
+        self.oval_y0 = self.canvas.canvasy(event.y)
+        # Create oval
         self.oval_id = self.canvas.create_oval(
-            self.x_start, self.y_start, self.x_start, self.y_start, outline=self.pen_color, width=self.pen_size1.get())
+            self.oval_x0, self.oval_y0, self.oval_x0, self.oval_y0, outline=self.pen_color, width=self.pen_size1.get())
 
     def moving_oval(self, event):
         # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
+        self.oval_x1 = self.canvas.canvasx(event.x)
+        self.oval_y1 = self.canvas.canvasy(event.y)
         # Modify rectangle x1, y1 coordinates
-        self.canvas.coords(self.oval_id, self.x_start, self.y_start,
-                           self.x_final, self.y_final)
+        self.canvas.coords(self.oval_id, self.oval_x0, self.oval_y0, self.oval_x1, self.oval_y1)
 
     def stop_oval(self, event):
         # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
-        # Modify rectangle x1, y1 coordinates
-        self.canvas.coords(self.oval_id, self.x_final, self.y_final,
-                           self.x_final, self.y_final)
+        self.oval_x1 = self.canvas.canvasx(event.x)
+        self.oval_y1 = self.canvas.canvasy(event.y)
+        # Modify oval x1, y1 coordinates
+        self.canvas.coords(self.oval_id, self.oval_x0, self.oval_y0, self.oval_x1, self.oval_y1)
+
+        self.stack.append(self.oval_id)
+        self.stack.append('$')
 
     def draw_line(self):
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
         self.canvas.bind("<Button-1>", self.start_line)
         self.canvas.bind("<ButtonRelease-1>", self.stop_line)
         self.canvas.bind("<B1-Motion>", self.moving_line)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def start_line(self, event):
-
-        self.x_start = self.canvas.canvasx(event.x)
-        self.y_start = self.canvas.canvasy(event.y)
-        # Create line
-        self.line_id = self.canvas.create_line(self.x_start, self.y_start, self.x_start, self.y_start,
-                                               fill=self.pen_color, width=self.pen_size1.get(), smooth=True,
-                                               capstyle=ROUND)
+        # Translate mouse screen x0,y0 coordinates to canvas coordinates
+        self.line_x0 = self.canvas.canvasx(event.x)
+        self.line_y0 = self.canvas.canvasy(event.y)
+        # Create rectangle
+        self.line_id = self.canvas.create_line(
+            self.line_x0, self.line_y0, self.line_x0, self.line_y0, fill=self.pen_color, width=self.pen_size1.get(),
+            smooth=True, capstyle=ROUND)
 
     def moving_line(self, event):
         # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
-        # Modify line x0, y0 coordinates
-        self.canvas.coords(self.line_id, self.x_start, self.y_start, self.x_final, self.y_final)
+        self.line_x1 = self.canvas.canvasx(event.x)
+        self.line_y1 = self.canvas.canvasy(event.y)
+        # Modify rectangle x1, y1 coordinates
+        self.canvas.coords(self.line_id, self.line_x0, self.line_y0, self.line_x1, self.line_y1)
 
     def stop_line(self, event):
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
-        # Modify line x1, y1 coordinates
-        self.canvas.coords(self.line_id, self.x_final, self.y_final, self.x_final, self.y_final)
+        # Translate mouse screen x1,y1 coordinates to canvas coordinates
+        self.line_x1 = self.canvas.canvasx(event.x)
+        self.line_y1 = self.canvas.canvasy(event.y)
+        # Modify rectangle x1, y1 coordinates
+        self.canvas.coords(self.line_id, self.line_x0, self.line_y0, self.line_x1, self.line_y1)
+
+        self.stack.append(self.line_id)
+        self.stack.append('$')
 
     def draw_triangle(self):
+        self.triangle_id = None
         self.canvas.bind("<Button-1>", self.start_triangle)
         self.canvas.bind("<ButtonRelease-1>", self.stop_triangle)
         self.canvas.bind("<B1-Motion>", self.moving_triangle)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def start_triangle(self, event):
         # Translate mouse screen x0,y0 coordinates to canvas coordinates
-        self.x_start = self.canvas.canvasx(event.x)
-        self.y_start = self.canvas.canvasy(event.y)
+        self.tri_x0 = self.canvas.canvasx(event.x)
+        self.tri_y0 = self.canvas.canvasy(event.y)
         # Create triangle
-        self.triangle_id = self.canvas.create_polygon(self.x_start, self.y_start,
-                                                      self.x_start - (event.x - self.x_start), event.y, event.x,
+        self.triangle_id = self.canvas.create_polygon(self.tri_x0, self.tri_y0,
+                                                      self.tri_x0 - (event.x - self.tri_x0), event.y, event.x,
                                                       event.y, outline=self.pen_color, width=self.pen_size1.get(),
                                                       fill='white')
 
     def moving_triangle(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
         # Modify triangle x1, y1 coordinates
-        self.canvas.coords(self.triangle_id, self.x_start, self.y_start, self.x_start - (event.x - self.x_start),
+        self.canvas.coords(self.triangle_id, self.tri_x0, self.tri_y0, self.tri_x0 - (event.x - self.tri_x0),
                            event.y, event.x, event.y)
 
     def stop_triangle(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
         # Modify triangle x1, y1 coordinates
-        self.canvas.coords(self.triangle_id, self.x_start, self.y_start, self.x_start - (event.x - self.x_start),
+        self.canvas.coords(self.triangle_id, self.tri_x0, self.tri_y0, self.tri_x0 - (event.x - self.tri_x0),
                            event.y, event.x, event.y)
+        self.stack.append(self.triangle_id)
+        self.stack.append('$')
 
     def draw_pentagon(self):
         self.canvas.bind("<Button-1>", self.start_pentagon)
         self.canvas.bind("<ButtonRelease-1>", self.stop_pentagon)
         self.canvas.bind("<B1-Motion>", self.moving_pentagon)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def start_pentagon(self, event):
         # Translate mouse screen x0,y0 coordinates to canvas coordinates
-        self.x_start = self.canvas.canvasx(event.x)
-        self.y_start = self.canvas.canvasy(event.y)
+        self.pent_x0 = self.canvas.canvasx(event.x)
+        self.pent_y0 = self.canvas.canvasy(event.y)
         # Create pentagon
-        self.pentagon_id = self.canvas.create_polygon(self.x_start, self.y_start, int(self.x_start), event.y,
-                                                      event.x, event.y, int(event.x), self.y_start,
-                                                      (self.x_start + event.x) / 2, self.y_start - 20,
+        self.pentagon_id = self.canvas.create_polygon(self.pent_x0, self.pent_y0, int(self.pent_x0), event.y,
+                                                      event.x, event.y, int(event.x), self.pent_y0,
+                                                      (self.pent_x0 + event.x) / 2, self.pent_y0 - 20,
                                                       outline=self.pen_color, width=self.pen_size1.get(), fill='white')
 
     def moving_pentagon(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
         # Modify pentagon x1, y1 coordinates
-        self.canvas.coords(self.pentagon_id, self.x_start, self.y_start, int(self.x_start), event.y, event.x, event.y,
-                           int(event.x), self.y_start, (self.x_start + event.x) / 2,
-                           self.y_start - 20)
+        self.canvas.coords(self.pentagon_id, self.pent_x0, self.pent_y0, int(self.pent_x0), event.y, event.x, event.y,
+                           int(event.x), self.pent_y0, (self.pent_x0 + event.x) / 2,
+                           self.pent_y0 - 20)
 
     def stop_pentagon(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
-        # Modify pentagon x1, y1 coordinates
-        self.canvas.coords(self.pentagon_id, self.x_start, self.y_start, int(self.x_start), event.y, event.x, event.y,
-                           int(event.x), self.y_start, (self.x_start + event.x) / 2,
-                           self.y_start - 20)
+        self.canvas.coords(self.pentagon_id, self.pent_x0, self.pent_y0, int(self.pent_x0), event.y, event.x, event.y,
+                           int(event.x), self.pent_y0, (self.pent_x0 + event.x) / 2,
+                           self.pent_y0 - 20)
+        self.stack.append(self.pentagon_id)
+        self.stack.append('$')
 
     def draw_hexagon(self):
         self.canvas.bind("<Button-1>", self.start_hexagon)
         self.canvas.bind("<ButtonRelease-1>", self.stop_hexagon)
         self.canvas.bind("<B1-Motion>", self.moving_hexagon)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def start_hexagon(self, event):
         # Translate mouse screen x0,y0 coordinates to canvas coordinates
-        self.x_start = self.canvas.canvasx(event.x)
-        self.y_start = self.canvas.canvasy(event.y)
+        self.hex_x0 = self.canvas.canvasx(event.x)
+        self.hex_y0 = self.canvas.canvasy(event.y)
         # Create hexagon
-        self.hexagon_id = self.canvas.create_polygon(self.x_start, self.y_start, int(self.x_start), event.y,
-                                                     (int(self.x_start) + int(event.x)) / 2, int(event.y) + 50,
-                                                     event.x, event.y, int(event.x), self.y_start,
-                                                     (self.x_start + event.x) / 2, self.y_start - 50,
+        self.hexagon_id = self.canvas.create_polygon(self.hex_x0, self.hex_y0, int(self.hex_x0), event.y,
+                                                     (int(self.hex_x0) + int(event.x)) / 2, int(event.y) + 50,
+                                                     event.x, event.y, int(event.x), self.hex_y0,
+                                                     (self.hex_x0 + event.x) / 2, self.hex_y0 - 50,
                                                      outline=self.pen_color, width=self.pen_size1.get(), fill='white')
 
     def moving_hexagon(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
         # Modify hexagon  x1, y1 coordinates
-        self.canvas.coords(self.hexagon_id, self.x_start, self.y_start, int(self.x_start), event.y,
-                           (int(self.x_start) + int(event.x)) / 2,
-                           int(event.y) + 50, event.x, event.y, int(event.x), self.y_start,
-                           (self.x_start + event.x) / 2, self.y_start - 50)
+        self.canvas.coords(self.hexagon_id, self.hex_x0, self.hex_y0, int(self.hex_x0), event.y,
+                           (int(self.hex_x0) + int(event.x)) / 2,
+                           int(event.y) + 50, event.x, event.y, int(event.x), self.hex_y0,
+                           (self.hex_x0 + event.x) / 2, self.hex_y0 - 50)
 
     def stop_hexagon(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
-        # Modify hexagon x1, y1 coordinates
-        self.canvas.coords(self.hexagon_id, self.x_start, self.y_start, int(self.x_start), event.y,
-                           (int(self.x_start) + int(event.x)) / 2,
-                           int(event.y) + 50, event.x, event.y, int(event.x), self.y_start,
-                           (self.x_start + event.x) / 2, self.y_start - 50)
+        self.canvas.coords(self.hexagon_id, self.hex_x0, self.hex_y0, int(self.hex_x0), event.y,
+                           (int(self.hex_x0) + int(event.x)) / 2,
+                           int(event.y) + 50, event.x, event.y, int(event.x), self.hex_y0,
+                           (self.hex_x0 + event.x) / 2, self.hex_y0 - 50)
+        self.stack.append(self.hexagon_id)
+        self.stack.append('$')
 
     def draw_parallelogram(self):
         self.canvas.bind("<Button-1>", self.start_parallelogram)
         self.canvas.bind("<ButtonRelease-1>", self.stop_parallelogram)
         self.canvas.bind("<B1-Motion>", self.moving_parallelogram)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
 
     def start_parallelogram(self, event):
         # Translate mouse screen x0,y0 coordinates to canvas coordinates
-        self.x_start = self.canvas.canvasx(event.x)
-        self.y_start = self.canvas.canvasy(event.y)
+        self.parallelogram_x0 = self.canvas.canvasx(event.x)
+        self.parallelogram_y0 = self.canvas.canvasy(event.y)
         # Create parallelogram
-        self.parallelogram_id = self.canvas.create_polygon(self.x_start, self.y_start, int(self.x_start) + 30, event.y,
-                                                           event.x, event.y, int(event.x) - 30, self.y_start,
+        self.parallelogram_id = self.canvas.create_polygon(self.parallelogram_x0, self.parallelogram_y0,
+                                                           int(self.parallelogram_x0) + 30, event.y,
+                                                           event.x, event.y, int(event.x) - 30, self.parallelogram_y0,
                                                            outline=self.pen_color, width=self.pen_size1.get(),
                                                            fill='white')
 
     def moving_parallelogram(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
         # Modify parallelogram x1, y1 coordinates
-        self.canvas.coords(self.parallelogram_id, self.x_start, self.y_start, int(self.x_start) + 30,
-                           event.y, event.x, event.y, int(event.x) - 30, self.y_start)
+        self.canvas.coords(self.parallelogram_id, self.parallelogram_x0, self.parallelogram_y0,
+                           int(self.parallelogram_x0) + 30, event.y, event.x, event.y, int(event.x) - 30,
+                           self.parallelogram_y0)
 
     def stop_parallelogram(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
-        self.x_final = self.canvas.canvasx(event.x)
-        self.y_final = self.canvas.canvasy(event.y)
         # Modify parallelogram x1, y1 coordinates
-        self.canvas.coords(self.parallelogram_id, self.x_start, self.y_start, int(self.x_start) + 30,
-                           event.y, event.x, event.y, int(event.x) - 30, self.y_start)
+        self.canvas.coords(self.parallelogram_id, self.parallelogram_x0, self.parallelogram_y0,
+                           int(self.parallelogram_x0) + 30, event.y, event.x, event.y, int(event.x) - 30,
+                           self.parallelogram_y0)
+        self.stack.append(self.parallelogram_id)
+        self.stack.append('$')
 
     def pencil(self):
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
         self.canvas.bind("<B1-Motion>", self.paint_app)
         self.canvas.bind("<ButtonRelease-1>", self.reset)
 
@@ -460,13 +470,14 @@ class Paint:
         self.txt = self.entry.get()
         if len(self.txt) > 0:
             self.top.destroy()
-            messagebox.showinfo('Add text', ''' 📣 Please set the mouse pointer from where you want to start the text left click on the mouse to insert then right click to cancel 📣''')
+            messagebox.showinfo('Add text',
+                                ''' 📣 Please set the mouse pointer from where you want to start the text left click on the mouse to insert then right click to cancel 📣''')
 
             self.canvas.bind('<Button-1>', self.insert_txt)
             self.canvas.bind('<Button-3>', self.cancel)
 
     def insert_txt(self, event):
-        self.canvas.create_text(event.x, event.y, text=self.txt,  font=("Times", 10, "bold"))
+        self.canvas.create_text(event.x, event.y, text=self.txt, font=("Times", 10, "bold"))
 
     def cancel(self, event):
         self.canvas.unbind('<Button-1>')
@@ -477,12 +488,34 @@ class Paint:
             if event.delta > 0:
                 self.canvas.scale("all", event.x, event.y, 1.1, 1.1)
             elif event.delta < 0:
-                self.canvas.scale("all", event.x, event.y, 0.9, 0.9)
+                self.scale("all", event.x, event.y, 0.9, 0.9)
         except:
             if event == 1:
                 self.canvas.scale("all", 550, 350, 1.1, 1.1)
             else:
                 self.canvas.scale("all", 550, 350, 0.9, 0.9)
+
+    def undo(self):
+
+        try:
+            self.item = self.stack.pop()
+
+            if self.item == '$':  # For undoing figures like rectangle, oval, circle, square, straight lines.
+                self.item = self.stack.pop()
+                self.canvas.delete(self.item)
+
+            elif self.item == '#':
+                self.item = self.stack.pop()
+                while self.item != '#' and self.item != '$':
+                    self.canvas.delete(self.item)
+                    if len(self.stack) == 0:
+                        break
+                    self.item = self.stack.pop()
+
+                if self.item == '#' or self.item == '$':
+                    self.stack.append(self.item)
+        except IndexError:
+            pass
 
 
 paint = Paint()
