@@ -241,3 +241,7 @@ class Shapes:
                            self.parallelogram_y0)
         self.stack.append(self.parallelogram_id)
         self.stack.append('$')
+
+
+shapes = Shapes()
+root.mainloop()
