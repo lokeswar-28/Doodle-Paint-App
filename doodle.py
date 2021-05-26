@@ -8,7 +8,7 @@ from tkinter import colorchooser
 root = Tk()
 root.attributes("-fullscreen", False)
 root.title("DOODLE")
-Icon = PhotoImage(file="doodle.png")
+Icon = PhotoImage(file="Utils/Pictures/icon/doodle.png")
 root.iconphoto(True, Icon)
 
 
@@ -100,12 +100,12 @@ class Paint:
         self.status_bar = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black', anchor=W)
         self.status_bar.pack(side=BOTTOM, fill=X)
         self.zoom_in_img = ImageTk.PhotoImage(
-            Image.open("Pictures/zoom in.png").resize((25, 20), Image.ANTIALIAS))
+            Image.open("Utils/Pictures/tools/zoom in.png").resize((25, 20), Image.ANTIALIAS))
         self.zoom_in = Button(image=self.zoom_in_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                               relief=RAISED, bd=3, command=lambda: self.zoom_control(1))
         self.zoom_in.place(x=1315, y=600)
         self.zoom_out_img = ImageTk.PhotoImage(
-            Image.open("Pictures/zoom out.png").resize((25, 20), Image.ANTIALIAS))
+            Image.open("Utils/Pictures/tools/zoom out.png").resize((25, 20), Image.ANTIALIAS))
         self.zoom_out = Button(image=self.zoom_out_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                relief=RAISED, bd=3, command=lambda: self.zoom_control(0))
         self.zoom_out.place(x=1275, y=600)
@@ -125,22 +125,22 @@ class Paint:
                 j = 1
         # CREATING BUTTONS:
         self.eraser_img = ImageTk.PhotoImage(
-            Image.open("Pictures/eraser.png").resize((28, 20), Image.ANTIALIAS))
+            Image.open("Utils/Pictures/tools/eraser.png").resize((28, 20), Image.ANTIALIAS))
         self.eraser_btn = Button(root, image=self.eraser_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                  relief=RAISED, bd=3, command=self.eraser)
         self.eraser_btn.place(x=0, y=167)
         self.pencil_img = ImageTk.PhotoImage(
-            Image.open("Pictures/pencil.png.").resize((24, 20), Image.ANTIALIAS))
+            Image.open("Utils/Pictures/tools/pencil.png.").resize((24, 20), Image.ANTIALIAS))
         self.pencil_btn = Button(root, image=self.pencil_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                  relief=RAISED, bd=3, command=self.pencil)
         self.pencil_btn.place(x=37, y=485)
         self.line_img = ImageTk.PhotoImage(
-            Image.open("Pictures/line.png").resize((24, 20), Image.ANTIALIAS))
+            Image.open("Utils/Pictures/tools/line.png").resize((24, 20), Image.ANTIALIAS))
         self.line_but = Button(root, image=self.line_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                relief=RAISED, bd=3, command=self.draw_line)
         self.line_but.place(x=0, y=485)
         self.colorbox_img = ImageTk.PhotoImage(
-            Image.open("Pictures/bucket.png").resize((25, 20), Image.ANTIALIAS))
+            Image.open("Utils/Pictures/tools/bucket.png").resize((25, 20), Image.ANTIALIAS))
         self.colorbox_btn = Button(root, image=self.colorbox_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                    relief=RAISED, bd=3, command=None)
         self.colorbox_btn.place(x=37, y=167)
@@ -164,32 +164,35 @@ class Paint:
         self.canvas.configure(scrollregion=(0, 0, 1000, 1000))
         self.xsb.pack(side=BOTTOM, fill=X)
         self.ysb.pack(side=RIGHT, fill=Y)
-        self.rectangle_img = ImageTk.PhotoImage(Image.open("Pictures/rectangle.png").resize((24, 20), Image.ANTIALIAS))
+        self.rectangle_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/shapes/rectangle.png").resize((24, 20),
+                                                                                                         Image.ANTIALIAS))
         self.rec = Button(root, image=self.rectangle_img, fg="red", bg="white",
                           font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_rectangle)
         self.rec.place(x=0, y=395)
 
         self.circle_img = ImageTk.PhotoImage(
-            Image.open("Pictures/circle.png").resize((24, 20), Image.ANTIALIAS))
+            Image.open("Utils/Pictures/shapes/circle.png").resize((24, 20), Image.ANTIALIAS))
         self.circle_btn = Button(root, image=self.circle_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                  relief=RAISED, bd=3, command=self.draw_oval)
         self.circle_btn.place(x=0, y=425)
 
-        self.triangle_img = ImageTk.PhotoImage(Image.open("Pictures/triangle.png").resize((24, 20), Image.ANTIALIAS))
+        self.triangle_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/shapes/triangle.png").resize((24, 20),
+                                                                                                       Image.ANTIALIAS))
         self.triangle_btn = Button(root, image=self.triangle_img, fg="red", bg="white",
                                    font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_triangle)
         self.triangle_btn.place(x=37, y=395)
 
-        self.pentagon_img = ImageTk.PhotoImage(Image.open("Pictures/pentagon.png").resize((24, 20), Image.ANTIALIAS))
+        self.pentagon_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/shapes/pentagon.png").resize((24, 20),
+                                                                                                       Image.ANTIALIAS))
         self.pentagon_btn = Button(root, image=self.pentagon_img, fg="red", bg="white",
                                    font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_pentagon)
         self.pentagon_btn.place(x=37, y=425)
-        self.hexagon_img = ImageTk.PhotoImage(Image.open("Pictures/hexagon.png").resize((24, 20), Image.ANTIALIAS))
+        self.hexagon_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/shapes/hexagon.png").resize((24, 20), Image.ANTIALIAS))
         self.hexagon_btn = Button(root, image=self.hexagon_img, fg="red", bg="white",
                                   font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_hexagon)
         self.hexagon_btn.place(x=0, y=455)
         self.parallelogram_img = ImageTk.PhotoImage(
-            Image.open("Pictures/parallelogram.png").resize((24, 20), Image.ANTIALIAS))
+            Image.open("Utils/Pictures/shapes/parallelogram.png").resize((24, 20), Image.ANTIALIAS))
         self.parallelogram_btn = Button(root, image=self.parallelogram_img, fg="red", bg="white",
                                         font=("Arial", 10, "bold"), relief=RAISED, bd=3,
                                         command=self.draw_parallelogram)
@@ -484,7 +487,7 @@ class Paint:
             if event.delta > 0:
                 self.canvas.scale("all", event.x, event.y, 1.1, 1.1)
             elif event.delta < 0:
-                self.scale("all", event.x, event.y, 0.9, 0.9)
+                self.canvas.scale("all", event.x, event.y, 0.9, 0.9)
         except:
             if event == 1:
                 self.canvas.scale("all", 550, 350, 1.1, 1.1)
