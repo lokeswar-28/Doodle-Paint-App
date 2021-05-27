@@ -1,25 +1,14 @@
 from tkinter import *
-import tkinter as tk
-from tkinter import messagebox, filedialog, PhotoImage
-from tkinter.ttk import Scale
-from PIL import ImageTk, Image, ImageGrab
+from Module.canvas import Canvas
+from doodle import root
 
 
 class Tools:
     line_x0, line_y0, line_x1, line_y1 = 0, 0, 0, 0
-
+    line_id = 0
 
     def __init__(self):
-        self.zoom_in_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/tools/zoom in.png").resize((25, 20), Image.ANTIALIAS))
-        self.zoom_in = Button(image=self.zoom_in_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                              relief=RAISED, bd=3, command=lambda: self.zoom_control(1))
-        self.zoom_in.place(x=1315, y=600)
-        self.zoom_out_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/tools/zoom out.png").resize((25, 20), Image.ANTIALIAS))
-        self.zoom_out = Button(image=self.zoom_out_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                               relief=RAISED, bd=3, command=lambda: self.zoom_control(0))
-        self.zoom_out.place(x=1275, y=600)
+
         self.pen_color = "black"
         self.color_fill = LabelFrame(root, bd=5, relief=RIDGE, bg="white")
         self.color_fill.place(x=0, y=0, width=70, height=165)
@@ -33,27 +22,6 @@ class Tools:
             if i == 6:
                 i = 0
                 j = 1
-        # CREATING BUTTONS:
-        self.eraser_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/tools/eraser.png").resize((28, 20), Image.ANTIALIAS))
-        self.eraser_btn = Button(root, image=self.eraser_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                 relief=RAISED, bd=3, command=self.eraser)
-        self.eraser_btn.place(x=0, y=167)
-        self.pencil_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/tools/pencil.png.").resize((24, 20), Image.ANTIALIAS))
-        self.pencil_btn = Button(root, image=self.pencil_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                 relief=RAISED, bd=3, command=self.pencil)
-        self.pencil_btn.place(x=37, y=485)
-        self.line_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/tools/line.png").resize((24, 20), Image.ANTIALIAS))
-        self.line_but = Button(root, image=self.line_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                               relief=RAISED, bd=3, command=self.draw_line)
-        self.line_but.place(x=0, y=485)
-        self.colorbox_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/tools/bucket.png").resize((25, 20), Image.ANTIALIAS))
-        self.colorbox_btn = Button(root, image=self.colorbox_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                   relief=RAISED, bd=3, command=None)
-        self.colorbox_btn.place(x=37, y=167)
 
         # CREATING SIZE FOR PENCIL AND ERASER
         self.pen_size = LabelFrame(root, bd=5, bg="white", relief=RIDGE)
@@ -61,6 +29,14 @@ class Tools:
         self.pen_size1 = Scale(self.pen_size, orient=VERTICAL, from_=50, to=0, length=120)
         self.pen_size1.set(1)
         self.pen_size1.grid(row=0, column=1, padx=15)
+
+        self.canvas = Button(root, text="Canvas", bd=4, bg="white", width=8, relief=RIDGE, command=Canvas.canvas_bg)
+        self.canvas.place(x=0, y=227)
+        self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=600, width=1000)
+        self.canvas.place(x=80, y=0)
+
+        self.stack = []
+        self.item = None
 
     def select_color(self, col):
         self.pen_color = col
@@ -106,5 +82,38 @@ class Tools:
         self.canvas.unbind("<Button-1>")
         self.canvas.unbind("<ButtonRelease-1>")
         self.canvas.unbind("<B1-Motion>")
-        self.canvas.bind("<B1-Motion>", self.paint_app)
-        self.canvas.bind("<ButtonRelease-1>", self.reset)
+        self.canvas.bind("<B1-Motion>", Canvas.paint_app)
+        self.canvas.bind("<ButtonRelease-1>", Canvas.reset)
+
+    def zoom_control(self, event):  # For Zoom in and Zoom out
+        if event.delta > 0:
+            self.canvas.scale("all", event.x, event.y, 1.1, 1.1)
+        elif event.delta < 0:
+            self.canvas.scale("all", event.x, event.y, 0.9, 0.9)
+
+        elif event == 1:
+            self.canvas.scale("all", 550, 350, 1.1, 1.1)
+        else:
+            self.canvas.scale("all", 550, 350, 1.1, 1.1)
+
+    def undo(self, event):
+
+        try:
+            self.item = self.stack.pop()
+
+            if self.item == '$':  # For undoing figures like rectangle, oval, circle, square, straight lines.
+                self.item = self.stack.pop()
+                self.canvas.delete(self.item)
+
+            elif self.item == '#':
+                self.item = self.stack.pop()
+                while self.item != '#' and self.item != '$':
+                    self.canvas.delete(self.item)
+                    if len(self.stack) == 0:
+                        break
+                    self.item = self.stack.pop()
+
+                if self.item == '#' or self.item == '$':
+                    self.stack.append(self.item)
+        except IndexError:
+            pass

@@ -1,9 +1,5 @@
-from tkinter import *
-
-from PIL import ImageTk, Image
-from Module import canvas
-
-root = Tk()
+from Module.canvas import Canvas
+from doodle import *
 
 
 class Shapes:
@@ -15,47 +11,27 @@ class Shapes:
     tri_x0, tri_y0 = 0, 0
     rect_id = 0
     oval_id = 0
-    line_id = 0
     pentagon_id = 0
     triangle_id = 0
     hexagon_id = 0
     parallelogram_id = 0
 
     def __init__(self):
-        self.rectangle_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/shapes/rectangle.png").resize((24, 20),
-                                                                                                         Image.ANTIALIAS))
-        self.rec = Button(root, image=self.rectangle_img, fg="red", bg="white",
-                          font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_rectangle)
-        self.rec.place(x=0, y=395)
+        self.canvas = Button(root, text="Canvas", bd=4, bg="white", width=8, relief=RIDGE, command=Canvas.canvas_bg)
+        self.canvas.place(x=0, y=227)
+        self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=600, width=1000)
+        self.canvas.place(x=80, y=0)
 
-        self.circle_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/shapes/circle.png").resize((24, 20), Image.ANTIALIAS))
-        self.circle_btn = Button(root, image=self.circle_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                 relief=RAISED, bd=3, command=self.draw_oval)
-        self.circle_btn.place(x=0, y=425)
+        self.stack = []
+        self.item = None
 
-        self.triangle_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/shapes/triangle.png").resize((24, 20),
-                                                                                                       Image.ANTIALIAS))
-        self.triangle_btn = Button(root, image=self.triangle_img, fg="red", bg="white",
-                                   font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_triangle)
-        self.triangle_btn.place(x=37, y=395)
+        self.pen_color = "black"
 
-        self.pentagon_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/shapes/pentagon.png").resize((24, 20),
-                                                                                                       Image.ANTIALIAS))
-        self.pentagon_btn = Button(root, image=self.pentagon_img, fg="red", bg="white",
-                                   font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_pentagon)
-        self.pentagon_btn.place(x=37, y=425)
-        self.hexagon_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/shapes/hexagon.png").resize((24, 20), Image.ANTIALIAS))
-        self.hexagon_btn = Button(root, image=self.hexagon_img, fg="red", bg="white",
-                                  font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_hexagon)
-        self.hexagon_btn.place(x=0, y=455)
-        self.parallelogram_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/shapes/parallelogram.png").resize((24, 20), Image.ANTIALIAS))
-        self.parallelogram_btn = Button(root, image=self.parallelogram_img, fg="red", bg="white",
-                                        font=("Arial", 10, "bold"), relief=RAISED, bd=3,
-                                        command=self.draw_parallelogram)
-        self.parallelogram_btn.place(x=37, y=455)
+        self.pen_size = LabelFrame(root, bd=5, bg="white", relief=RIDGE)
+        self.pen_size.place(x=0, y=260, height=130, width=70)
+        self.pen_size1 = Scale(self.pen_size, orient=VERTICAL, from_=50, to=0, length=120)
+        self.pen_size1.set(1)
+        self.pen_size1.grid(row=0, column=1, padx=15)
 
     def draw_rectangle(self):
         self.canvas.unbind("<Button-1>")
@@ -243,5 +219,5 @@ class Shapes:
         self.stack.append('$')
 
 
-shapes = Shapes()
+canvas = Canvas()
 root.mainloop()
