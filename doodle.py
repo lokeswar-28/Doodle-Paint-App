@@ -2,9 +2,11 @@ from tkinter import *
 import tkinter as tk
 from tkinter import messagebox, filedialog, PhotoImage
 from tkinter.ttk import Scale
+import PIL
 from PIL import ImageTk, Image, ImageGrab
 from tkinter import colorchooser
 import time
+import cv2
 
 root = Tk()
 root.geometry("1150x750")
@@ -12,6 +14,28 @@ root.title("DOODLE")
 Icon = PhotoImage(file="doodle.png")
 root.iconphoto(True, Icon)
 root.config(cursor="tcross")
+width, height = 300, 300
+cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+root.bind('<Escape>', lambda e: root.quit())
+lmain = Label(root)
+lmain.pack(side="right")
+
+
+def show_frame():
+    ret, frame = cap.read()
+    if ret:
+        frame = cv2.flip(frame, 1)
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        img = PIL.Image.fromarray(cv2image)
+        imgtk = ImageTk.PhotoImage(image=img)
+        lmain.imgtk = imgtk
+        lmain.configure(image=imgtk)
+        lmain.after(10, show_frame)
+
+
+show_frame()
 
 
 class Paint:
@@ -226,7 +250,7 @@ class Paint:
         self.pen_size1 = Scale(self.pen_size, orient=VERTICAL, from_=50, to=0, length=120)
         self.pen_size1.set(1)
         self.pen_size1.grid(row=0, column=1, padx=15)
-        self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=600, width=1000)
+        self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=900, width=930)
         self.canvas.place(x=80, y=0)
         self.xsb = Scrollbar(root, orient="horizontal", command=self.canvas.xview)
         self.ysb = Scrollbar(root, orient="vertical", command=self.canvas.yview)
@@ -501,7 +525,6 @@ class Paint:
         self.canvas.bind("<ButtonRelease-1>", self.reset)
 
     def add_text(self):
-        global top, entry
         self.top = tk.Toplevel()
         self.top.geometry('310x70')
         text_label = Label(self.top, text="Enter the text", font=("Times", 10, "bold"))
@@ -650,8 +673,8 @@ class Paint:
             y1 = root.winfo_rooty() + self.canvas.winfo_y()
             file = filedialog.asksaveasfilename(initialdir="Screen_shots", title="Screen shot save", filetypes=[("PNG File", "*.png")])
             if file:
-                ImageGrab.grab().crop((x1 + self.x_start, y1 + self.y_start, x1 + self.x_final, y1 + self.y_final)).save(file+".png")
-            self.reset()
+                ImageGrab.grab().crop((x1 + self.rect_x0, y1 + self.rect_y0, x1 + self.rect_x1, y1 + self.rect_y1)).save(file + ".png")
+            self.reset_rectangle()
 
         except BaseException:
             messagebox.showerror("Selection Error", "First select a region by clicking the selection tool', then take screen shot")
