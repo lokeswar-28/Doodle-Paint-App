@@ -14,18 +14,19 @@ root.title("DOODLE")
 Icon = PhotoImage(file="doodle.png")
 root.iconphoto(True, Icon)
 root.config(cursor="tcross")
-width, height = 300, 300
+width, height = 365, 350
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 root.bind('<Escape>', lambda e: root.quit())
 lmain = Label(root)
 lmain.pack(side="right")
+lmain.place(x=1000, y=0)
 
 
 def show_frame():
-    ret, frame = cap.read()
-    if ret:
+    _, frame = cap.read()
+    if _:
         frame = cv2.flip(frame, 1)
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         img = PIL.Image.fromarray(cv2image)
