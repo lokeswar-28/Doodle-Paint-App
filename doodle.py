@@ -24,6 +24,7 @@ lmain.pack(side="right")
 lmain.place(x=1000, y=0)
 
 
+
 def show_frame():
     _, frame = cap.read()
     if _:
