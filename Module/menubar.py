@@ -1,7 +1,9 @@
+from tkinter import *
 import tkinter as tk
 from tkinter import messagebox, filedialog
 from PIL import ImageGrab
-from Module.gui import *
+
+root = Tk
 
 
 class Menubar:
@@ -16,6 +18,7 @@ class Menubar:
         messagebox.showinfo('DOODLE', 'Go to the help in the main window')
 
     def __init__(self):
+        root = Tk()
         self.canvas = Button(root, text="Canvas", bd=4, bg="white", width=8, relief=RIDGE, command=Canvas.canvas_bg)
         self.canvas.place(x=0, y=227)
         self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=600, width=1000)

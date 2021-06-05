@@ -1,5 +1,5 @@
 from Module.canvas import Canvas
-from doodle import *
+from tkinter import *
 
 
 class Shapes:
@@ -17,6 +17,7 @@ class Shapes:
     parallelogram_id = 0
 
     def __init__(self):
+        root = Tk()
         self.canvas = Button(root, text="Canvas", bd=4, bg="white", width=8, relief=RIDGE, command=Canvas.canvas_bg)
         self.canvas.place(x=0, y=227)
         self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=600, width=1000)
@@ -217,7 +218,3 @@ class Shapes:
                            self.parallelogram_y0)
         self.stack.append(self.parallelogram_id)
         self.stack.append('$')
-
-
-canvas = Canvas()
-root.mainloop()

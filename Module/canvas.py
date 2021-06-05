@@ -1,12 +1,12 @@
 from tkinter import *
 from tkinter import colorchooser
-from doodle import root
 
 
 class Canvas:
     x_start, y_start = 0, 0
 
     def __init__(self):
+        root = Tk()
         self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=600, width=1000)
         self.canvas.place(x=80, y=0)
 

@@ -1,6 +1,5 @@
 from tkinter import *
 from Module.canvas import Canvas
-from doodle import root
 
 
 class Tools:
@@ -8,7 +7,7 @@ class Tools:
     line_id = 0
 
     def __init__(self):
-
+        root = Tk()
         self.pen_color = "black"
         self.color_fill = LabelFrame(root, bd=5, relief=RIDGE, bg="white")
         self.color_fill.place(x=0, y=0, width=70, height=165)

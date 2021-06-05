@@ -3,13 +3,13 @@ from Module.canvas import Canvas
 from Module.menubar import Menubar
 from PIL import ImageTk, Image
 from Module.tools import Tools
-from doodle import root
 from Module.shapes import Shapes
 
 
 class Gui:
 
     def menu_bar(self):
+        root = Tk()
         menu = Menu(root)
         # FILE MENU
         file_menu = Menu(menu, tearoff=0)
@@ -42,7 +42,11 @@ class Gui:
         root.bind("<Control-z>", Tools.undo)
 
     def __init__(self):
-
+        root = Tk()
+        root.attributes("-fullscreen", False)
+        root.title("DOODLE")
+        Icon = PhotoImage(file="Utils/Pictures/icon/doodle.png")
+        root.iconphoto(True, Icon)
         self.clear = Button(root, text="Clear", bd=4, bg="white", width=8, relief=RIDGE,
                             command=lambda: self.canvas.delete("all"))
         self.clear.place(x=0, y=197)
@@ -160,7 +164,8 @@ class Gui:
         self.status_bar.pack(side=BOTTOM, fill=X)
 
         self.menu_bar()
+        root.mainloop()
 
 
-gui = Gui()
-root.mainloop()
+
+
