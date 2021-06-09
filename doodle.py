@@ -6,37 +6,24 @@ import PIL
 from PIL import ImageTk, Image, ImageGrab
 from tkinter import colorchooser
 import time
-import cv2
+import liveStream
+import globals 
 
-root = Tk()
-root.geometry("1150x750")
-root.title("DOODLE")
+globals.root = Tk()
+globals.root.geometry("1150x750")
+globals.root.title("DOODLE")
 Icon = PhotoImage(file="Utils/Pictures/Icon/doodle.png")
-root.iconphoto(True, Icon)
-root.config(cursor="tcross")
-width, height = 365, 350
-cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-root.bind('<Escape>', lambda e: root.quit())
-lmain = Label(root)
+globals.root.iconphoto(True, Icon)
+globals.root.config(cursor="tcross")
+
+
+globals.root.bind('<Escape>', lambda e: globals.root.quit())
+lmain = Label(globals.root)
 lmain.pack(side="right")
 lmain.place(x=1000, y=0)
 
 
-def show_frame():
-    _, frame = cap.read()
-    if _:
-        frame = cv2.flip(frame, 1)
-        cv2image = cv2.cvtColor(frame, cv2.COLOR_RGB2BGRA)
-        img = PIL.Image.fromarray(cv2image)
-        imgtk = ImageTk.PhotoImage(image=img)
-        lmain.imgtk = imgtk
-        lmain.configure(image=imgtk)
-        lmain.after(10, show_frame)
-
-
-show_frame()
+# liveStream.show_frame()
 
 
 class Paint:
@@ -70,7 +57,7 @@ class Paint:
 
     def new(self):
         take = messagebox.askyesno("New Window Conformation", "Do you really want to open new Window?")
-        root.title("Doodle" + "-----" + "New Window")
+        globals.root.title("Doodle" + "-----" + "New Window")
         if take is True:
             self.canvas.delete("all")
 
@@ -89,8 +76,8 @@ class Paint:
         file = filedialog.asksaveasfilename(initialdir="/", filetypes=(
             ("jpeg files", "*.jpg"), ("png files", "*.png")))
         if file:
-            x = root.winfo_rootx() + self.canvas.winfo_x()
-            y = root.winfo_rooty() + self.canvas.winfo_y()
+            x = globals.root.winfo_rootx() + self.canvas.winfo_x()
+            y = globals.root.winfo_rooty() + self.canvas.winfo_y()
             x1 = x + self.canvas.winfo_width()
             y1 = y + self.canvas.winfo_height()
             ImageGrab.grab().crop((x, y, x1, y1)).save(file + '.png')
@@ -100,7 +87,7 @@ class Paint:
     def quit():
         take = messagebox.askyesno("Quit Conformation", "Do you really want to quit?")
         if take is True:
-            root.quit()
+            globals.root.quit()
 
     def undo(self, _=None):
         try:
@@ -131,8 +118,8 @@ class Paint:
             self.canvas.itemconfig(self.temp[len(self.temp) - 1], outline="white")
             time.sleep(0.0001)
             self.canvas.update()
-            x1 = root.winfo_rootx() + self.canvas.winfo_x()
-            y1 = root.winfo_rooty() + self.canvas.winfo_y()
+            x1 = globals.root.winfo_rootx() + self.canvas.winfo_x()
+            y1 = globals.root.winfo_rooty() + self.canvas.winfo_y()
             ImageGrab.grab().crop((x1 + self.rect_x0, y1 + self.rect_y0, x1 + self.rect_x1, y1 + self.rect_y1)).save(
                 "cutting.png")
             self.counter += 1
@@ -153,7 +140,7 @@ class Paint:
         self.stack.append('$')
 
     def menu_bar(self):
-        menu = Menu(root)
+        menu = Menu(globals.root)
         menu_img = ["open.png", "save.png", "exit.png", "undo.png", "cut.png", "copy.png", "paste.png", "text.png", "about.png", "new.png"]
         for i in range(10):
             self.menu_img_container.append(i)
@@ -197,12 +184,12 @@ class Paint:
                               activebackground="blue", activeforeground="white")
         menu.add_cascade(label="❓ Help", menu=help_menu)
 
-        root.config(menu=menu)
-        root.bind("<Control-z>", self.undo)
-        root.bind("<Control-s>", self.save_file)
-        root.bind("<Control-x>", self.cut)
-        root.bind("<Control-c>", self.copy)
-        root.bind("<Control-v>", self.paste)
+        globals.root.config(menu=menu)
+        globals.root.bind("<Control-z>", self.undo)
+        globals.root.bind("<Control-s>", self.save_file)
+        globals.root.bind("<Control-x>", self.cut)
+        globals.root.bind("<Control-c>", self.copy)
+        globals.root.bind("<Control-v>", self.paste)
 
     def __init__(self):
         self.stack = []
@@ -217,7 +204,7 @@ class Paint:
         self.zoom_out.place(x=1275, y=600)
         self.menu_bar()
         self.pen_color = "black"
-        self.color_fill = LabelFrame(root, bd=5, relief=RIDGE, bg="blue")
+        self.color_fill = LabelFrame(globals.root, bd=5, relief=RIDGE, bg="blue")
         self.color_fill.place(x=0, y=0, width=70, height=165)
         colors = ["#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FFD700", "#FF00FF", "#FFC0CB", "#800080", "#00ffd9", "#808080"]
         i = j = 0
@@ -229,60 +216,60 @@ class Paint:
                 j = 1
         # CREATING BUTTONS:
         self.eraser_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Tools/eraser.png").resize((28, 20), Image.ANTIALIAS))
-        self.eraser_btn = Button(root, image=self.eraser_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.eraser)
+        self.eraser_btn = Button(globals.root, image=self.eraser_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.eraser)
         self.eraser_btn.place(x=0, y=167)
         self.pencil_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Tools/pencil.png.").resize((24, 20), Image.ANTIALIAS))
-        self.pencil_btn = Button(root, image=self.pencil_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.pencil)
+        self.pencil_btn = Button(globals.root, image=self.pencil_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.pencil)
         self.pencil_btn.place(x=37, y=485)
         self.line_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Tools/line.png").resize((24, 20), Image.ANTIALIAS))
-        self.line_but = Button(root, image=self.line_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_line)
+        self.line_but = Button(globals.root, image=self.line_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_line)
         self.line_but.place(x=0, y=485)
         self.colorbox_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Tools/bucket.png").resize((25, 20), Image.ANTIALIAS))
-        self.colorbox_btn = Button(root, image=self.colorbox_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=None)
+        self.colorbox_btn = Button(globals.root, image=self.colorbox_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=None)
         self.colorbox_btn.place(x=37, y=167)
-        self.clear = Button(root, text="Clear", bd=4, bg="white", fg="blue", width=8, relief=RIDGE, command=lambda: self.canvas.delete("all"))
+        self.clear = Button(globals.root, text="Clear", bd=4, bg="white", fg="blue", width=8, relief=RIDGE, command=lambda: self.canvas.delete("all"))
         self.clear.place(x=0, y=197)
-        self.canvas = Button(root, text="Canvas", bd=4, bg="white", fg="blue", width=8, relief=RIDGE, command=self.canvas_bg)
+        self.canvas = Button(globals.root, text="Canvas", bd=4, bg="white", fg="blue", width=8, relief=RIDGE, command=self.canvas_bg)
         self.canvas.place(x=0, y=227)
 
         # CREATING SIZE FOR PENCIL AND ERASER
-        self.pen_size = LabelFrame(root, bd=5, bg="white", relief=RIDGE)
+        self.pen_size = LabelFrame(globals.root, bd=5, bg="white", relief=RIDGE)
         self.pen_size.place(x=0, y=260, height=130, width=70)
         self.pen_size1 = Scale(self.pen_size, orient=VERTICAL, from_=50, to=0, length=120)
         self.pen_size1.set(1)
         self.pen_size1.grid(row=0, column=1, padx=15)
-        self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=900, width=930)
+        self.canvas = Canvas(globals.root, bd=6, bg="white", relief=GROOVE, height=900, width=930)
         self.canvas.place(x=80, y=0)
-        self.xsb = Scrollbar(root, orient="horizontal", command=self.canvas.xview)
-        self.ysb = Scrollbar(root, orient="vertical", command=self.canvas.yview)
+        self.xsb = Scrollbar(globals.root, orient="horizontal", command=self.canvas.xview)
+        self.ysb = Scrollbar(globals.root, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(yscrollcommand=self.ysb.set, xscrollcommand=self.xsb.set)
         self.canvas.configure(scrollregion=(0, 0, 1000, 1000))
         self.xsb.pack(side=BOTTOM, fill=X)
         self.ysb.pack(side=RIGHT, fill=Y)
         self.rectangle_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Shapes/rectangle.png").resize((24, 20), Image.ANTIALIAS))
-        self.rec = Button(root, image=self.rectangle_img, fg="red", bg="white",
+        self.rec = Button(globals.root, image=self.rectangle_img, fg="red", bg="white",
                           font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_rectangle)
         self.rec.place(x=0, y=395)
         self.circle_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Shapes/circle.png").resize((24, 20), Image.ANTIALIAS))
-        self.circle_btn = Button(root, image=self.circle_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_oval)
+        self.circle_btn = Button(globals.root, image=self.circle_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_oval)
         self.circle_btn.place(x=0, y=425)
         self.triangle_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Shapes/triangle.png").resize((24, 20), Image.ANTIALIAS))
-        self.triangle_btn = Button(root, image=self.triangle_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_triangle)
+        self.triangle_btn = Button(globals.root, image=self.triangle_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_triangle)
         self.triangle_btn.place(x=37, y=395)
         self.pentagon_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Shapes/pentagon.png").resize((24, 20), Image.ANTIALIAS))
-        self.pentagon_btn = Button(root, image=self.pentagon_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_pentagon)
+        self.pentagon_btn = Button(globals.root, image=self.pentagon_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_pentagon)
         self.pentagon_btn.place(x=37, y=425)
         self.hexagon_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Shapes/hexagon.png").resize((24, 20), Image.ANTIALIAS))
-        self.hexagon_btn = Button(root, image=self.hexagon_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_hexagon)
+        self.hexagon_btn = Button(globals.root, image=self.hexagon_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_hexagon)
         self.hexagon_btn.place(x=0, y=455)
         self.parallelogram_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Shapes/parallelogram.png").resize((24, 20), Image.ANTIALIAS))
-        self.parallelogram_btn = Button(root, image=self.parallelogram_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_parallelogram)
+        self.parallelogram_btn = Button(globals.root, image=self.parallelogram_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_parallelogram)
         self.parallelogram_btn.place(x=37, y=455)
         self.selection_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Tools/selection_box.png").resize((24, 20), Image.ANTIALIAS))
-        self.selection_btn = Button(root, image=self.selection_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.select_region)
+        self.selection_btn = Button(globals.root, image=self.selection_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.select_region)
         self.selection_btn.place(x=0, y=515)
         self.screen_shot_img = ImageTk.PhotoImage(Image.open("Utils/Pictures/Tools/screen_shot.png").resize((24, 20), Image.ANTIALIAS))
-        self.screen_shot_btn = Button(root, image=self.screen_shot_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.screen_shot)
+        self.screen_shot_btn = Button(globals.root, image=self.screen_shot_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.screen_shot)
         self.screen_shot_btn.place(x=37, y=515)
         # mouse drag
         self.canvas.bind("<B1-Motion>", self.paint_app)
@@ -669,9 +656,9 @@ class Paint:
         try:
             self.canvas.delete(self.temp.pop())
             time.sleep(0.0000001)
-            root.update()
-            x1 = root.winfo_rootx() + self.canvas.winfo_x()
-            y1 = root.winfo_rooty() + self.canvas.winfo_y()
+            globals.root.update()
+            x1 = globals.root.winfo_rootx() + self.canvas.winfo_x()
+            y1 = globals.root.winfo_rooty() + self.canvas.winfo_y()
             file = filedialog.asksaveasfilename(initialdir="Screen_shots", title="Screen shot save", filetypes=[("PNG File", "*.png")])
             if file:
                 ImageGrab.grab().crop((x1 + self.rect_x0, y1 + self.rect_y0, x1 + self.rect_x1, y1 + self.rect_y1)).save(file + ".png")
@@ -682,4 +669,4 @@ class Paint:
 
 
 paint = Paint()
-root.mainloop()
+globals.root.mainloop()
