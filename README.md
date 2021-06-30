@@ -81,5 +81,5 @@ Eraser.png https://in.pinterest.com/pin/765823111613319302/?amp_client_id=CLIENT
 
 ## License
 
-MIT
+MIT License
 
