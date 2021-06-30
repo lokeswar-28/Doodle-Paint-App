@@ -10,7 +10,8 @@ You can draw using two modes:
 
 
 ## Supported platform
-- Windows 10 64-bit
+- Windows 64-bit
+- Python 3.8.x(autopy is not available in version 3.9.x)
 
 ## Installation
 install python 3.8.10
@@ -67,7 +68,7 @@ This app allows you to do all the below features.
 ❌ While using zoom in and zoom out the original position of the drawings in the canvas cannot be got
 
 ❌ When the canvas is colored and you want to change the color in the midst of drawing and you have used eraser, the path of the eraser will appear.
-You can change the canvas color, draw, erase and after saving, give the clear button and then change the canvas to while. Henceforth working with one particular color will lead to any issue
+You can change the canvas color, draw, erase and after saving, give the clear button and then change the canvas to white. Henceforth working with one particular color will not lead to any issue
 
 ## Credits
 
@@ -78,6 +79,20 @@ bucket.png https://www.iconfinder.com/icons/2488319/blue_paint_bucket_color_pain
 Mario.cur http://www.rw-designer.com/cursor-detail/80421
 
 Eraser.png https://in.pinterest.com/pin/765823111613319302/?amp_client_id=CLIENT_ID(_)&mweb_unauth_id=&simplified=true
+
+Cut.png https://www.onlinewebfonts.com/icon/517522
+
+Paste.png https://icons8.com/icon/5416/paste
+
+about.png https://en.wikipedia.org/wiki/File:Information_icon.svg
+
+open.png https://icons8.com/icon/C8gfz6xPL7TZ/open-file-folder
+
+save.png https://www.freeiconspng.com/img/36513
+
+text.png https://www.nicepng.com/s/text-icon/
+
+
 
 ## License
 
