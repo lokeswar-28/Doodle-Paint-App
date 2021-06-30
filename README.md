@@ -34,15 +34,15 @@ This app allows you to do all the below features.
 
 👉 Can change the color of the canvas and the eraser matches with that color
 
-👉 Can draw shapes such as rectangle, circle, hexagon, pentagon, paralellogram and line
+👉 Can draw shapes such as rectangle⬜, circle⚪, hexagon, pentagon, paralellogram and line
 
 👉 Clear the canvas completely
 
-👉 Open and save file
+👉 Open📂 and save file
 
 👉 Can cut, copy a specific region and paste it in the canvas wherever you need
 
-👉 Screenshot, Snipping, zoom in and zoom out option is available
+👉 Screenshot, Snipping, zoom in🔍 and zoom out🔎 option is available
 
 👉 Undo shapes, drawings
 
@@ -50,7 +50,7 @@ This app allows you to do all the below features.
 
 👉 Choose outline color from the color palette and fill color from bucket and then draw colorful shapes
 
-👉 How to draw using gesture mode is given in tips in help menu
+👉 How to draw using gesture mode🖐 is given in tips in help menu
 
 👉 Modes can be shifted using the mode menu
 
