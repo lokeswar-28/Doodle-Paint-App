@@ -72,15 +72,12 @@ You can change the canvas color, draw, erase and after saving, give the clear bu
 ## Credits
 
 IMAGES
+
 bucket.png https://www.iconfinder.com/icons/2488319/blue_paint_bucket_color_paint_bucket_tool_icon
+
 Mario.cur http://www.rw-designer.com/cursor-detail/80421
 
-
-
-
-
-
-## Contributing
+Eraser.png https://in.pinterest.com/pin/765823111613319302/?amp_client_id=CLIENT_ID(_)&mweb_unauth_id=&simplified=true
 
 ## License
 
