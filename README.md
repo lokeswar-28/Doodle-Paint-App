@@ -35,14 +35,11 @@ This app have two mode
 - dlib
 - Autopy
 - pynput
-- 
+
 ## Installation
 install python 3.8.10
 [https://www.python.org/downloads/release/python-3810/]
-install tkinter
-```sh
-pip install tk
-```
+
 install pillow
 ```sh
 pip install pillow
