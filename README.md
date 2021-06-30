@@ -9,52 +9,22 @@ You can draw using two modes:
 ![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/123977612-c4a34900-d9dc-11eb-8c71-202ad3aab24b.gif)
 
 
-## Dependencies
-- python
-- tkinter
-- numpy
-- pillow
-- mediapipe
-- time
-- open-cv
-- dlib
-- Autopy
-- pynput
+## Supported platform
+- Windows 10 64-bit
 
 ## Installation
 install python 3.8.10
-
 [https://www.python.org/downloads/release/python-3810/]
 
-install pillow
-```sh
-pip install pillow
-```
-install numpy
-```sh
-pip install numpy
-```
-install opencv
-```sh
-pip install opencv-python
-```
-install mediapipe
-```sh
-pip install mediapipe
-```
-install autopy
-```sh
-pip install autopy
-```
-install dlib
-```sh
-pip install dlib
-```
-install pynput
-```sh
-pip install pynput
-```
+User can install all the packages from requirement.txt
 
+Open cmd with the path where you want install the package and give the following command
+
+install requirement.txt
+```sh
+pip install -r "path of the requirement.txt"
+```
+![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/80261018/123986306-cfada780-d9e3-11eb-817c-8d16176da2c6.gif)
 
 ## Usage
 
@@ -72,6 +42,19 @@ pip install pynput
 
 👉 Screenshot, Snipping, zoom in and zoom out option is available
 
+👉 Undo shapes, drawings
+
+👉 Fill colors to the available shapes
+
+👉 Choose outline color from the color palette and fill color from bucket and then draw colorful shapes
+
+👉 How to draw using gesture mode is given in tips in help menu
+
+👉 Modes can be shifted using the mode menu
+
+👉 Cursor position, current mode is shown in status bar and fps count is also shown on the canvas
+
+
 
 
 
@@ -81,25 +64,5 @@ pip install pynput
 
 ## License
 
-MIT License
-
-Copyright (c) 2021 lokeswar-28
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+MIT
 
