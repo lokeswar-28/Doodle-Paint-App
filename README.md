@@ -62,11 +62,11 @@ This app allows you to do all the below features.
 
 ## CONSTRAINTS
 
-Fill color can be applied only to the available shapes in the doodle app and cannot fill color to any other regular or irregular shapes
+-Fill color can be applied only to the available shapes in the doodle app and cannot fill color to any other regular or irregular shapes
 
-While using zoom in and zoom out the original position of the drawings in the canvas cannot be got
+-While using zoom in and zoom out the original position of the drawings in the canvas cannot be got
 
-When the canvas is colored and you want to change the color in the midst of drawing and you have used eraser, the path of the eraser will appear.
+-When the canvas is colored and you want to change the color in the midst of drawing and you have used eraser, the path of the eraser will appear.
 You can change the canvas color, draw, erase and after saving, give the clear button and then change the canvas to while. Henceforth working with one particular color will lead to any issue
 
 ## Credits
