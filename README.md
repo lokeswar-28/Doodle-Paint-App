@@ -16,11 +16,11 @@ You can draw using two modes:
 install python 3.8.10
 [https://www.python.org/downloads/release/python-3810/]
 
-User can install all the packages from requirement.txt
+- User can install all the packages from requirement.txt
 
-Open cmd with the path where you want install the package and give the following command
+- Open cmd with the path where you want install the package and give the following command
 
-install requirement.txt
+- install requirement.txt
 ```sh
 pip install -r "path of the requirement.txt"
 ```
