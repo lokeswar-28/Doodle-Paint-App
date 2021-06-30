@@ -56,11 +56,11 @@ This app allows you to do all the below features.
 
 👉 Cursor position, current mode is shown in status bar and fps count is also shown on the canvas
 
-### HOW TO DRAW USING GESTURES
+### How to draw using gesture
 
 ![about_gesture](https://user-images.githubusercontent.com/80261018/123988046-4c8d5100-d9e5-11eb-8029-66487c0c7a7c.png)
 
-## CONSTRAINTS
+## Constraints
 
 ❌ Fill color can be applied only to the available shapes in the doodle app and cannot fill color to any other regular or irregular shapes
 
@@ -70,6 +70,11 @@ This app allows you to do all the below features.
 You can change the canvas color, draw, erase and after saving, give the clear button and then change the canvas to while. Henceforth working with one particular color will lead to any issue
 
 ## Credits
+
+IMAGES
+bucket.png https://www.iconfinder.com/icons/2488319/blue_paint_bucket_color_paint_bucket_tool_icon
+Mario.cur http://www.rw-designer.com/cursor-detail/80421
+
 
 
 
