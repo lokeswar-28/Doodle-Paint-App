@@ -23,6 +23,7 @@ You can draw using two modes:
 
 ## Installation
 install python 3.8.10
+
 [https://www.python.org/downloads/release/python-3810/]
 
 install pillow
@@ -45,7 +46,7 @@ install autopy
 ```sh
 pip install autopy
 ```
-dlib
+install dlib
 ```sh
 pip install dlib
 ```
@@ -71,7 +72,6 @@ pip install pynput
 
 👉 Screenshot, Snipping, zoom in and zoom out option is available
 
-👉 
 
 
 
@@ -81,5 +81,5 @@ pip install pynput
 
 ## License
 
-MIT
+  MIT
 
