@@ -30,7 +30,7 @@ pip install -r "path of the requirement.txt"
 
 This app allows you to do all the below features.
 
-👉 Can draw with ##pencil🖌 in a canvas and eraser it
+👉 Can draw with pencil🖌 in a canvas and eraser it
 
 👉 Can change the color of the canvas and the eraser matches with that color
 
