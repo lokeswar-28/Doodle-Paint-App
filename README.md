@@ -54,9 +54,9 @@ pip install -r "path of the requirement.txt"
 
 👉 Cursor position, current mode is shown in status bar and fps count is also shown on the canvas
 
+### HOW TO DRAW USING GESTURES
 
-
-
+![about_gesture](https://user-images.githubusercontent.com/80261018/123988046-4c8d5100-d9e5-11eb-8029-66487c0c7a7c.png)
 
 ## Credits
 
