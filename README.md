@@ -23,9 +23,9 @@ install python 3.8.10
 
 - install requirement.txt
 ```sh
-pip install -r "path of the requirement.txt"
+pip install -r requirement.txt
 ```
-![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/80261018/123986306-cfada780-d9e3-11eb-817c-8d16176da2c6.gif)
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/124113328-f1ad3580-da88-11eb-9771-655b721d9238.gif)
 
 ## Usage
 
