@@ -8,7 +8,8 @@ You can draw using two modes:
                                             
                                               CURSOR MODE
                                              
-![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/123977612-c4a34900-d9dc-11eb-8c71-202ad3aab24b.gif)
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/124122110-58cfe780-da93-11eb-92d6-6aa08f06674d.gif)
+
 
                                              GESTURE MODE
                                              
