@@ -9,11 +9,11 @@ import time
 import cv2
 from idlelib.tooltip import Hovertip
 
-
 root = Tk()
 root.geometry("1150x750")
 root.title("DOODLE")
 root.wm_iconbitmap('Utils/Pictures/Icon/doodle.ico')
+root.config(cursor="@Mario.cur")
 lmain = Label(root)
 
 
@@ -35,6 +35,7 @@ class Paint:
     triangle_id = 0
     hexagon_id = 0
     parallelogram_id = 0
+    eraser_id = 0
     file_to_open: PhotoImage
     menu_img_container = []
     about_img = []
@@ -58,137 +59,7 @@ class Paint:
     fc = 0
     FPS = 0
 
-    def show_frame(self):
-        if self.mode == "Gesture mode":
-            _, frame = self.cap.read()
-            self.fc += 1
-            TIME = time.time() - self.start_time
-            if (TIME) >= self.display_time :
-                self.FPS = self.fc / (TIME)
-                self.fc = 0
-                self.start_time = time.time()
-            fps_disp = "FPS: " + str(self.FPS)[:5]
-            self.fps['text'] = f'{fps_disp}'
-            if _:
-                frame = cv2.flip(frame, 1)
-                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                img = PIL.Image.fromarray(cv2image)
-                imgtk = ImageTk.PhotoImage(image=img)
-                lmain.imgtk = imgtk
-                lmain.configure(image=imgtk)
-                lmain.after(1, self.show_frame)
-                self.canvas.config(width=900, height=620)
-
-        else:
-            return
-
-    def close(self):
-        if self.mode == "Cursor mode":
-            self.cap.release()
-            lmain.config(image="")
-            self.canvas.config(width=1000, height=600)
-        else:
-            return
-
-    def gesture_mode(self):
-        self.mode = "Gesture mode"
-        width, height = 350, 350
-        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        lmain.pack(side="left")
-        lmain.place(x=1000, y=0)
-        self.show_frame()
-
-    def cursor_mode(self):
-        self.mode = "Cursor mode"
-        self.close()
-
-    def new(self):
-        take = messagebox.askyesno("New Window Conformation", "Do you really want to open new Window?")
-        root.title("Doodle" + "-----" + "New Window")
-        if take is True:
-            self.canvas.delete("all")
-
-    def open_file(self):
-        try:
-            filename = filedialog.askopenfilename(initialdir="/",
-                                                  filetypes=(("jpeg files", "*.jpg"), ("png files", "*.png")))
-            image = Image.open(filename)
-            image.save("Temp.png", "png")
-            self.file_to_open = PhotoImage(file="Temp.png")
-            self.canvas.delete("all")
-            self.canvas.create_image(3, 3, image=self.file_to_open, anchor=NW)
-        except AttributeError:
-            pass
-
-    def save_file(self, _=None):
-        file = filedialog.asksaveasfilename(initialdir="/", filetypes=(
-            ("jpeg files", "*.jpg"), ("png files", "*.png")))
-        if file:
-            x = root.winfo_rootx() + self.canvas.winfo_x()
-            y = root.winfo_rooty() + self.canvas.winfo_y()
-            x1 = x + self.canvas.winfo_width()
-            y1 = y + self.canvas.winfo_height()
-            ImageGrab.grab().crop((x, y, x1, y1)).save(file + '.png')
-            ImageGrab.grab().crop((x, y, x1, y1)).save(file + '.jpg')
-
-    @staticmethod
-    def quit():
-        take = messagebox.askyesno("Quit Confirmation", "Do you really want to quit?")
-        if take is True:
-            root.quit()
-
-    def undo(self, _=None):
-        try:
-            self.item = self.stack.pop()
-
-            if self.item == '$':  # For undoing figures like rectangle, oval, circle, square, straight lines.
-                self.item = self.stack.pop()
-                self.canvas.delete(self.item)
-            elif self.item == '#':
-                self.item = self.stack.pop()
-                while self.item != '#' and self.item != '$':
-                    self.canvas.delete(self.item)
-                    if len(self.stack) == 0:
-                        break
-                    self.item = self.stack.pop()
-                if self.item == '#' or self.item == '$':
-                    self.stack.append(self.item)
-        except IndexError:
-            pass
-
-    def cut(self, _=None):  # Cut the selected region
-        self.copy(1)
-        self.delete_selected_region(False)
-        self.canvas.unbind("<B1-Motion>")
-
-    def copy(self, _=None):  # Copy the selected region
-        try:
-            self.canvas.itemconfig(self.temp[len(self.temp) - 1], outline=self.eraser_color)
-            time.sleep(0.0001)
-            self.canvas.update()
-            x1 = root.winfo_rootx() + self.canvas.winfo_x()
-            y1 = root.winfo_rooty() + self.canvas.winfo_y()
-            ImageGrab.grab().crop((x1 + self.rect_x0, y1 + self.rect_y0, x1 + self.rect_x1, y1 + self.rect_y1)).save(
-                "cutting.png")
-            self.counter += 1
-            self.reset_rectangle()
-        except BaseException:
-            messagebox.showerror("Cut error")
-
-    def paste(self, _=None):  # Paste the region keep in clipboard
-        messagebox.showinfo('Paste', ''' 📣 Please set the mouse pointer then click the left button 📣''')
-        self.cut_copy_img.append(ImageTk.PhotoImage(Image.open("cutting.png")))
-        self.canvas.bind('<Button-1>', self.place)
-        self.canvas.bind("<Motion>", self.coordinates)
-        self.canvas.bind('<Button-3>', self.cancel)
-
-    def place(self, event):
-        take = self.canvas.create_image(event.x, event.y, image=self.cut_copy_img[self.counter])
-        self.stack.append(take)
-        self.stack.append('$')
-
+    # To create menu bar
     def menu_bar(self):
         menu = Menu(root)
         menu_img = ["open.png", "save.png", "exit.png", "undo.png", "cut.png", "copy.png", "paste.png", "text.png",
@@ -247,7 +118,8 @@ class Paint:
                               background="white", foreground="blue", font=("Arial", 10, "bold"),
                               activebackground="blue", activeforeground="white")
         menu.add_cascade(label="❓ Help", menu=help_menu)
-
+        
+        # MODE MENU
         mode_menu = Menu(menu, tearoff=0)
         mode_menu.add_command(label="Cursor", command=self.cursor_mode, image=self.menu_img_container[10],
                               compound=LEFT, background="white", foreground="blue", font=("Arial", 10, "bold"),
@@ -256,9 +128,11 @@ class Paint:
                               , image=self.menu_img_container[11], compound=LEFT, background="white", foreground="blue",
                               font=("Arial", 10, "bold"),
                               activebackground="blue", activeforeground="white")
-        menu.add_cascade(label="Mode", menu=mode_menu)
+        menu.add_cascade(label="🖐 Mode", menu=mode_menu)
 
         root.config(menu=menu)
+        
+        # TO USE SHORTCUTS
         root.bind("<Control-z>", self.undo)
         root.bind("<Control-s>", self.save_file)
         root.bind("<Control-x>", self.cut)
@@ -267,80 +141,139 @@ class Paint:
 
     def __init__(self):
         self.color_fills = "white"
-        self.stack = []
-        self.item = None
-        self.status_bar = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black', anchor=W)
-        self.status_bar.pack(side=BOTTOM, fill=X)
-        self.fps = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black')
-        self.fps.place(x=1000, y=250)
-        self.zoom_in_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Tools/zoom in.png").resize((25, 20), Image.ANTIALIAS))
-        self.zoom_in = Button(image=self.zoom_in_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED,
-                              bd=3, command=lambda: self.zoom_control(1))
-        self.zoom_in.place(x=1315, y=600)
-        Hovertip(self.zoom_in, 'Zoom in')
-        self.zoom_out_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Tools/zoom out.png").resize((25, 20), Image.ANTIALIAS))
-        self.zoom_out = Button(image=self.zoom_out_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED,
-                               bd=3, command=lambda: self.zoom_control(0))
-        self.zoom_out.place(x=1275, y=600)
-        Hovertip(self.zoom_out, 'Zoom out')
-        self.menu_bar()
         self.pen_color = "black"
         self.eraser_color = "white"
+        self.colour = "black"
+        self.stack = []
+        self.item = None
+        self.menu_bar()
+        
+        # CREATING COLOR PALLETE
         self.color_fill = LabelFrame(root, bd=5, relief=RIDGE, bg="white")
-        self.color_fill.place(x=0, y=0, width=70, height=165)
+        self.color_fill.place(x=0, y=0, width=70, height=190)
         Hovertip(self.color_fill, 'Outline color')
-        colors = ["#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FFD700", "#FF00FF", "#FFC0CB",
-                  "#800080", "#00ffd9", "#808080"]
+        colors = ["#000000", "#964B00", "#FF0000", "#008000", "#0000FF", "#800080", "#FFA500", "#FFFFFF",
+                  "#ffff00", "#FF69B4", "#00FF00", "#00fffb", "#b19cd9", "#FFD580"]
         i = j = 0
         for color in colors:
             Button(self.color_fill, bg=color, bd=2, relief=RIDGE, width=3,
                    command=lambda col=color: self.select_color(col)).grid(row=i, column=j)
             i = i + 1
-            if i == 6:
+            if i == 7:
                 i = 0
-                j = 1
+                j += 1
+
+        # CREATING LABEL FOR STATUS BAR AND FPS COUNT
+                
+        self.status_bar = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black', anchor=W)
+        self.status_bar.pack(side=BOTTOM, fill=X)
+        self.fps = Label(bd=5, relief=RIDGE, font='Times 15 bold', bg='white', fg='black')
+        self.fps.place(x=1000, y=250)
+        
         # CREATING BUTTONS:
+        self.zoom_in_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Tools/zoom in.png").resize((25, 20), Image.ANTIALIAS))
+        self.zoom_in = Button(image=self.zoom_in_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED,
+                              bd=3, command=lambda: self.zoom_control(1))
+        self.zoom_in.place(x=0, y=575)
+        Hovertip(self.zoom_in, 'Zoom in')
+        self.zoom_out_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Tools/zoom out.png").resize((25, 20), Image.ANTIALIAS))
+        self.zoom_out = Button(image=self.zoom_out_img, fg="red", bg="white", font=("Arial", 10, "bold"), relief=RAISED,
+                               bd=3, command=lambda: self.zoom_control(0))
+        self.zoom_out.place(x=37, y=575)
+        Hovertip(self.zoom_out, 'Zoom out')
+
         self.eraser_img = ImageTk.PhotoImage(
             Image.open("Utils/Pictures/Tools/eraser.png").resize((28, 20), Image.ANTIALIAS))
         self.eraser_btn = Button(root, image=self.eraser_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                  relief=RAISED, bd=3, command=self.eraser)
-        self.eraser_btn.place(x=0, y=167)
+        self.eraser_btn.place(x=0, y=197)
         Hovertip(self.eraser_btn, ' Eraser')
         self.pencil_img = ImageTk.PhotoImage(
             Image.open("Utils/Pictures/Tools/pencil.png.").resize((24, 20), Image.ANTIALIAS))
         self.pencil_btn = Button(root, image=self.pencil_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                  relief=RAISED, bd=3, command=self.pencil)
-        self.pencil_btn.place(x=37, y=485)
+        self.pencil_btn.place(x=37, y=515)
         Hovertip(self.pencil_btn, 'Pencil')
         self.line_img = ImageTk.PhotoImage(
             Image.open("Utils/Pictures/Tools/line.png").resize((24, 20), Image.ANTIALIAS))
         self.line_but = Button(root, image=self.line_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                relief=RAISED, bd=3, command=self.draw_line)
-        self.line_but.place(x=0, y=485)
+        self.line_but.place(x=0, y=515)
         Hovertip(self.line_but, 'Line')
         self.colorbox_img = ImageTk.PhotoImage(
             Image.open("Utils/Pictures/Tools/bucket.png").resize((25, 20), Image.ANTIALIAS))
         self.colorbox_btn = Button(root, image=self.colorbox_img, fg="red", bg="white", font=("Arial", 10, "bold"),
                                    relief=RAISED, bd=3, command=self.color_bucket)
-        self.colorbox_btn.place(x=37, y=167)
+        self.colorbox_btn.place(x=37, y=197)
         Hovertip(self.colorbox_btn, 'Fill color')
         self.clear = Button(root, text="Clear", bd=4, bg="white", fg="blue", width=8, relief=RIDGE,
                             command= self.clear_canvas)
-        self.clear.place(x=0, y=197)
+        self.clear.place(x=0, y=227)
         self.canvas = Button(root, text="Canvas", bd=4, bg="white", fg="blue", width=8, relief=RIDGE,
                              command=self.canvas_bg)
-        self.canvas.place(x=0, y=227)
+        self.canvas.place(x=0, y=257)
         Hovertip(self.canvas, 'Change the canvas background')
 
-        # CREATING SIZE FOR PENCIL AND ERASER
         self.pen_size = LabelFrame(root, bd=5, bg="white", relief=RIDGE)
-        self.pen_size.place(x=0, y=260, height=130, width=70)
-        Hovertip(self.pen_size, 'Change Pencil Size and Eraser Size')
-        self.pen_size1 = Scale(self.pen_size, orient=VERTICAL, from_=50, to=0, length=120)
+        self.pen_size.place(x=0, y=290, height=130, width=70)
+        Hovertip(self.pen_size, 'Changes Pencil and Eraser Size')
+        self.pen_size1 = Scale(self.pen_size, orient=VERTICAL, from_=70, to=0, length=120)
         self.pen_size1.set(1)
-        self.pen_size1.grid(row=0, column=1, padx=15)
+        self.pen_size1.grid(row=0, column=1, padx=17)
+        
+        self.rectangle_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Shapes/rectangle.png").resize((24, 20), Image.ANTIALIAS))
+        self.rec = Button(root, image=self.rectangle_img, fg="red", bg="white",
+                          font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_rectangle)
+        self.rec.place(x=0, y=425)
+        Hovertip(self.rec, 'Rectangle')
+        self.circle_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Shapes/circle.png").resize((24, 20), Image.ANTIALIAS))
+        self.circle_btn = Button(root, image=self.circle_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                                 relief=RAISED, bd=3, command=self.draw_oval)
+        self.circle_btn.place(x=0, y=455)
+        Hovertip(self.circle_btn, 'Circle')
+        self.triangle_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Shapes/triangle.png").resize((24, 20), Image.ANTIALIAS))
+        self.triangle_btn = Button(root, image=self.triangle_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                                   relief=RAISED, bd=3, command=self.draw_triangle)
+        self.triangle_btn.place(x=37, y=425)
+        Hovertip(self.triangle_btn, 'Triangle')
+        self.pentagon_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Shapes/pentagon.png").resize((24, 20), Image.ANTIALIAS))
+        self.pentagon_btn = Button(root, image=self.pentagon_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                                   relief=RAISED, bd=3, command=self.draw_pentagon)
+        self.pentagon_btn.place(x=37, y=455)
+        Hovertip(self.pentagon_btn, 'Pentagon')
+        self.hexagon_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Shapes/hexagon.png").resize((24, 20), Image.ANTIALIAS))
+        self.hexagon_btn = Button(root, image=self.hexagon_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                                  relief=RAISED, bd=3, command=self.draw_hexagon)
+        self.hexagon_btn.place(x=0, y=485)
+        Hovertip(self.hexagon_btn, 'Hexagon')
+        self.parallelogram_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Shapes/parallelogram.png").resize((24, 20), Image.ANTIALIAS))
+        self.parallelogram_btn = Button(root, image=self.parallelogram_img, fg="red", bg="white",
+                                        font=("Arial", 10, "bold"), relief=RAISED, bd=3,
+                                        command=self.draw_parallelogram)
+        self.parallelogram_btn.place(x=37, y=485)
+        Hovertip(self.parallelogram_btn, 'Parallelogram')
+        self.selection_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Tools/selection_box.png").resize((24, 20), Image.ANTIALIAS))
+        self.selection_btn = Button(root, image=self.selection_img, fg="red", bg="white", font=("Arial", 10, "bold"),
+                                    relief=RAISED, bd=3, command=self.select_region)
+        self.selection_btn.place(x=0, y=545)
+        Hovertip(self.selection_btn, 'Select region')
+        self.screen_shot_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Tools/screen_shot.png").resize((24, 20), Image.ANTIALIAS))
+        self.screen_shot_btn = Button(root, image=self.screen_shot_img, fg="red", bg="white",
+                                      font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.snipping)
+        self.screen_shot_btn.place(x=37, y=545)
+        Hovertip(self.screen_shot_btn, 'Snipping tool')
+
+        # MAKE CANVAS
         self.canvas = Canvas(root, bd=6, bg="white", relief=GROOVE, height=600, width=1000)
         self.canvas.place(x=80, y=0,)
         self.xsb = Scrollbar(root, orient="horizontal", command=self.canvas.xview)
@@ -349,108 +282,58 @@ class Paint:
         self.canvas.configure(scrollregion=(0, 0, 1000, 1000))
         self.xsb.pack(side=BOTTOM, fill=X)
         self.ysb.pack(side=RIGHT, fill=Y)
-        self.rectangle_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Shapes/rectangle.png").resize((24, 20), Image.ANTIALIAS))
-        self.rec = Button(root, image=self.rectangle_img, fg="red", bg="white",
-                          font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.draw_rectangle)
-        self.rec.place(x=0, y=395)
-        Hovertip(self.rec, 'Rectangle')
-        self.circle_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Shapes/circle.png").resize((24, 20), Image.ANTIALIAS))
-        self.circle_btn = Button(root, image=self.circle_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                 relief=RAISED, bd=3, command=self.draw_oval)
-        self.circle_btn.place(x=0, y=425)
-        Hovertip(self.circle_btn, 'Circle')
-        self.triangle_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Shapes/triangle.png").resize((24, 20), Image.ANTIALIAS))
-        self.triangle_btn = Button(root, image=self.triangle_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                   relief=RAISED, bd=3, command=self.draw_triangle)
-        self.triangle_btn.place(x=37, y=395)
-        Hovertip(self.triangle_btn, 'Triangle')
-        self.pentagon_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Shapes/pentagon.png").resize((24, 20), Image.ANTIALIAS))
-        self.pentagon_btn = Button(root, image=self.pentagon_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                   relief=RAISED, bd=3, command=self.draw_pentagon)
-        self.pentagon_btn.place(x=37, y=425)
-        Hovertip(self.pentagon_btn, 'Pentagon')
-        self.hexagon_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Shapes/hexagon.png").resize((24, 20), Image.ANTIALIAS))
-        self.hexagon_btn = Button(root, image=self.hexagon_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                  relief=RAISED, bd=3, command=self.draw_hexagon)
-        self.hexagon_btn.place(x=0, y=455)
-        Hovertip(self.hexagon_btn, 'Hexagon')
-        self.parallelogram_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Shapes/parallelogram.png").resize((24, 20), Image.ANTIALIAS))
-        self.parallelogram_btn = Button(root, image=self.parallelogram_img, fg="red", bg="white",
-                                        font=("Arial", 10, "bold"), relief=RAISED, bd=3,
-                                        command=self.draw_parallelogram)
-        self.parallelogram_btn.place(x=37, y=455)
-        Hovertip(self.parallelogram_btn, 'Parallelogram')
-        self.selection_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Tools/selection_box.png").resize((24, 20), Image.ANTIALIAS))
-        self.selection_btn = Button(root, image=self.selection_img, fg="red", bg="white", font=("Arial", 10, "bold"),
-                                    relief=RAISED, bd=3, command=self.select_region)
-        self.selection_btn.place(x=0, y=515)
-        Hovertip(self.selection_btn, 'Select region')
-        self.screen_shot_img = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Tools/screen_shot.png").resize((24, 20), Image.ANTIALIAS))
-        self.screen_shot_btn = Button(root, image=self.screen_shot_img, fg="red", bg="white",
-                                      font=("Arial", 10, "bold"), relief=RAISED, bd=3, command=self.screen_shot)
-        self.screen_shot_btn.place(x=37, y=515)
-        Hovertip(self.screen_shot_btn, 'Screenshot')
-        # mouse drag
+        
+        # MOUSE DRAG
         self.canvas.bind("<B1-Motion>", self.paint_app)
         self.canvas.bind("<ButtonRelease-1>", self.reset)
         self.canvas.bind("<Motion>", self.coordinates)
-        self.canvas.bind("<MouseWheel>", self.zoomer)
+        self.canvas.bind("<MouseWheel>", self.zoom_canvas)
 
     def paint_app(self, event):
         if self.x_start and self.y_start:
             self.stack.append(
                 self.canvas.create_line(self.x_start, self.y_start, event.x, event.y, width=self.pen_size1.get(),
                                         fill=self.pen_color, capstyle=ROUND, smooth=True))
-
         self.x_start = event.x
         self.y_start = event.y
-
-    def zoomer(self, _):
-        if _.delta > 0:
-            self.canvas.scale("all", _.x, _.y, 1.1, 1.1)
-        elif _.delta < 0:
-            self.canvas.scale("all", _.x, _.y, 0.9, 0.9)
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def reset(self, _):
         self.x_start = None
         self.y_start = None
         self.stack.append('#')
 
-    def reset_rectangle(self):
-        self.rect_x0 = 0
-        self.rect_y0 = 0
-        self.rect_y1 = 0
-        self.rect_x1 = 0
-        self.temp = []
+    # DRAWING TOOLS
+    def pencil(self):
+        self.canvas.config(cursor="@Mario.cur")
+        self.canvas.unbind("<Button-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<B1-Motion>")
+        self.pen_color = self.colour
+        self.canvas.bind("<B1-Motion>", self.paint_app)
+        self.canvas.bind("<ButtonRelease-1>", self.reset)
 
     def select_color(self, col):
         self.pen_color = col
+        self.colour = col
 
     def eraser(self):
-        self.canvas.config(cursor="dotbox")
+        self.canvas.config(cursor="@eraser.cur")
+        self.pen_color = self.eraser_color
         self.canvas.bind("<B1-Motion>", self.paint_app)
         self.canvas.bind("<ButtonRelease-1>", self.reset)
-        self.pen_color = self.eraser_color
-
+        
     def color_bucket(self):
-        self.color_fills = colorchooser.askcolor(color=self.color_fills)[1]
-
-    def coordinates(self, event):
-        self.status_bar['text'] = f'{event.x},{event.y}px                                                                               {self.mode}'
+        color_box = messagebox.askyesno("FILL COLOR", "This is applicable only for the available shapes."
+                                        " Select the color from the chooser with which color you want inside the shape"
+                                        " and then draw the shape you wish. Do you wish to continue?")
+        if color_box is True:
+            self.color_fills = colorchooser.askcolor(color=self.color_fills)[1]
 
     def canvas_bg(self):
         color = colorchooser.askcolor()
         self.canvas.configure(background=color[1])
         self.eraser_color = color[1]
+        self.pen_color = self.eraser_color 
 
     def clear_canvas(self):
         clear_c = messagebox.askyesno("Clear canvas confirmation", "Do you really want to Clear the canvas? "
@@ -458,112 +341,103 @@ class Paint:
         if clear_c is True:
             self.canvas.delete("all")
 
+    # STATUS BAR INDICATING MOUSE POSITION AND MODE
+    def coordinates(self, event):
+        self.status_bar['text'] = f'{event.x},{event.y}px                                                                               {self.mode}'
+        
+    # TO CREATE SHAPES
     def draw_rectangle(self):
-        self.canvas.config(cursor="arrow")
+        self.canvas.config(cursor="@Mario.cur")
+        self.pen_color = self.colour
         self.canvas.bind("<Button-1>", self.start_rect)
         self.canvas.bind("<ButtonRelease-1>", self.stop_rect)
         self.canvas.bind("<B1-Motion>", self.moving_rect)
 
     def start_rect(self, event):
-        # Translate mouse screen x0,y0 coordinates to canvas coordinates
+        # Convert x0,y0 coordinates to canvas coordinates
         self.rect_x0 = self.canvas.canvasx(event.x)
         self.rect_y0 = self.canvas.canvasy(event.y)
-        # Create rectangle
+        # Creates rectangle
         self.rect_id = self.canvas.create_rectangle(
             self.rect_x0, self.rect_y0, self.rect_x0, self.rect_y0, outline=self.pen_color, fill=self.color_fills, width=self.pen_size1.get())
 
     def moving_rect(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
         self.rect_x1 = self.canvas.canvasx(event.x)
         self.rect_y1 = self.canvas.canvasy(event.y)
         # Modify rectangle x1, y1 coordinates
         self.canvas.coords(self.rect_id, self.rect_x0, self.rect_y0, self.rect_x1, self.rect_y1)
 
     def stop_rect(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
         self.rect_x1 = self.canvas.canvasx(event.x)
         self.rect_y1 = self.canvas.canvasy(event.y)
-        # Modify rectangle x1, y1 coordinates
         self.canvas.coords(self.rect_id, self.rect_x0, self.rect_y0, self.rect_x1, self.rect_y1)
 
         self.stack.append(self.rect_id)
         self.stack.append('$')
 
     def draw_oval(self):
-        self.canvas.config(cursor="arrow")
+        self.canvas.config(cursor="@Mario.cur")
+        self.pen_color = self.colour
         self.canvas.bind("<Button-1>", self.start_oval)
         self.canvas.bind("<ButtonRelease-1>", self.stop_oval)
         self.canvas.bind("<B1-Motion>", self.moving_oval)
 
     def start_oval(self, event):
-        # Translate mouse screen x0,y0 coordinates to canvas coordinates
         self.oval_x0 = self.canvas.canvasx(event.x)
         self.oval_y0 = self.canvas.canvasy(event.y)
-        # Create oval
         self.oval_id = self.canvas.create_oval(
             self.oval_x0, self.oval_y0, self.oval_x0, self.oval_y0, outline=self.pen_color, fill=self.color_fills, width=self.pen_size1.get())
 
     def moving_oval(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
         self.oval_x1 = self.canvas.canvasx(event.x)
         self.oval_y1 = self.canvas.canvasy(event.y)
-        # Modify rectangle x1, y1 coordinates
         self.canvas.coords(self.oval_id, self.oval_x0, self.oval_y0, self.oval_x1, self.oval_y1)
 
     def stop_oval(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
         self.oval_x1 = self.canvas.canvasx(event.x)
         self.oval_y1 = self.canvas.canvasy(event.y)
-        # Modify oval x1, y1 coordinates
         self.canvas.coords(self.oval_id, self.oval_x0, self.oval_y0, self.oval_x1, self.oval_y1)
 
         self.stack.append(self.oval_id)
         self.stack.append('$')
 
     def draw_line(self):
-        self.canvas.config(cursor="arrow")
+        self.canvas.config(cursor="@Mario.cur")
+        self.pen_color = self.colour
         self.canvas.bind("<Button-1>", self.start_line)
         self.canvas.bind("<ButtonRelease-1>", self.stop_line)
         self.canvas.bind("<B1-Motion>", self.moving_line)
 
     def start_line(self, event):
-        # Translate mouse screen x0,y0 coordinates to canvas coordinates
         self.line_x0 = self.canvas.canvasx(event.x)
         self.line_y0 = self.canvas.canvasy(event.y)
-        # Create rectangle
         self.line_id = self.canvas.create_line(
             self.line_x0, self.line_y0, self.line_x0, self.line_y0, fill=self.pen_color, width=self.pen_size1.get(),
             smooth=True, capstyle=ROUND)
 
     def moving_line(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
         self.line_x1 = self.canvas.canvasx(event.x)
         self.line_y1 = self.canvas.canvasy(event.y)
-        # Modify rectangle x1, y1 coordinates
         self.canvas.coords(self.line_id, self.line_x0, self.line_y0, self.line_x1, self.line_y1)
 
     def stop_line(self, event):
-        # Translate mouse screen x1,y1 coordinates to canvas coordinates
         self.line_x1 = self.canvas.canvasx(event.x)
         self.line_y1 = self.canvas.canvasy(event.y)
-        # Modify rectangle x1, y1 coordinates
         self.canvas.coords(self.line_id, self.line_x0, self.line_y0, self.line_x1, self.line_y1)
 
         self.stack.append(self.line_id)
         self.stack.append('$')
 
     def draw_triangle(self):
-        self.triangle_id = None
-        self.canvas.config(cursor="arrow")
+        self.canvas.config(cursor="@Mario.cur")
+        self.pen_color = self.colour
         self.canvas.bind("<Button-1>", self.start_triangle)
         self.canvas.bind("<ButtonRelease-1>", self.stop_triangle)
         self.canvas.bind("<B1-Motion>", self.moving_triangle)
 
     def start_triangle(self, event):
-        # Translate mouse screen x0,y0 coordinates to canvas coordinates
         self.tri_x0 = self.canvas.canvasx(event.x)
         self.tri_y0 = self.canvas.canvasy(event.y)
-        # Create triangle
         self.triangle_id = self.canvas.create_polygon(self.tri_x0, self.tri_y0, self.tri_x0 - (event.x - self.tri_x0),
                                                       event.y, event.x, event.y, outline=self.pen_color,
                                                       width=self.pen_size1.get(),
@@ -571,35 +445,31 @@ class Paint:
                                                       )
 
     def moving_triangle(self, event):
-        # Modify triangle x1, y1 coordinates
         self.canvas.coords(self.triangle_id, self.tri_x0, self.tri_y0, self.tri_x0 - (event.x - self.tri_x0), event.y,
                            event.x, event.y)
 
     def stop_triangle(self, event):
-        # Modify triangle x1, y1 coordinates
         self.canvas.coords(self.triangle_id, self.tri_x0, self.tri_y0, self.tri_x0 - (event.x - self.tri_x0), event.y,
                            event.x, event.y)
         self.stack.append(self.triangle_id)
         self.stack.append('$')
 
     def draw_pentagon(self):
-        self.canvas.config(cursor="arrow")
+        self.canvas.config(cursor="@Mario.cur")
+        self.pen_color = self.colour
         self.canvas.bind("<Button-1>", self.start_pentagon)
         self.canvas.bind("<ButtonRelease-1>", self.stop_pentagon)
         self.canvas.bind("<B1-Motion>", self.moving_pentagon)
 
     def start_pentagon(self, event):
-        # Translate mouse screen x0,y0 coordinates to canvas coordinates
         self.pent_x0 = self.canvas.canvasx(event.x)
         self.pent_y0 = self.canvas.canvasy(event.y)
-        # Create pentagon
         self.pentagon_id = self.canvas.create_polygon(self.pent_x0, self.pent_y0, int(self.pent_x0), event.y, event.x,
                                                       event.y, int(event.x), self.pent_y0,
                                                       (self.pent_x0 + event.x) / 2, self.pent_y0 - 20,
                                                       outline=self.pen_color, width=self.pen_size1.get(), fill=self.color_fills)
 
     def moving_pentagon(self, event):
-        # Modify pentagon x1, y1 coordinates
         self.canvas.coords(self.pentagon_id, self.pent_x0, self.pent_y0, int(self.pent_x0), event.y, event.x, event.y,
                            int(event.x), self.pent_y0, (self.pent_x0 + event.x) / 2, self.pent_y0 - 20)
 
@@ -610,16 +480,15 @@ class Paint:
         self.stack.append('$')
 
     def draw_hexagon(self):
-        self.canvas.config(cursor="arrow")
+        self.canvas.config(cursor="@Mario.cur")
+        self.pen_color = self.colour
         self.canvas.bind("<Button-1>", self.start_hexagon)
         self.canvas.bind("<ButtonRelease-1>", self.stop_hexagon)
         self.canvas.bind("<B1-Motion>", self.moving_hexagon)
 
     def start_hexagon(self, event):
-        # Translate mouse screen x0,y0 coordinates to canvas coordinates
         self.hex_x0 = self.canvas.canvasx(event.x)
         self.hex_y0 = self.canvas.canvasy(event.y)
-        # Create hexagon
         self.hexagon_id = self.canvas.create_polygon(self.hex_x0, self.hex_y0, int(self.hex_x0), event.y,
                                                      (int(self.hex_x0) + int(event.x)) / 2, int(event.y) + 50, event.x,
                                                      event.y, int(event.x),
@@ -627,7 +496,6 @@ class Paint:
                                                      outline=self.pen_color, width=self.pen_size1.get(),  fill=self.color_fills)
 
     def moving_hexagon(self, event):
-        # Modify hexagon  x1, y1 coordinates
         self.canvas.coords(self.hexagon_id, self.hex_x0, self.hex_y0, int(self.hex_x0), event.y,
                            (int(self.hex_x0) + int(event.x)) / 2, int(event.y) + 50, event.x, event.y, int(event.x),
                            self.hex_y0,
@@ -642,16 +510,15 @@ class Paint:
         self.stack.append('$')
 
     def draw_parallelogram(self):
-        self.canvas.config(cursor="arrow")
+        self.canvas.config(cursor="@Mario.cur")
+        self.pen_color = self.colour
         self.canvas.bind("<Button-1>", self.start_parallelogram)
         self.canvas.bind("<ButtonRelease-1>", self.stop_parallelogram)
         self.canvas.bind("<B1-Motion>", self.moving_parallelogram)
 
     def start_parallelogram(self, event):
-        # Translate mouse screen x0,y0 coordinates to canvas coordinates
         self.parallelogram_x0 = self.canvas.canvasx(event.x)
         self.parallelogram_y0 = self.canvas.canvasy(event.y)
-        # Create parallelogram
         self.parallelogram_id = self.canvas.create_polygon(self.parallelogram_x0, self.parallelogram_y0,
                                                            int(self.parallelogram_x0) + 30, event.y, event.x, event.y,
                                                            int(event.x) - 30,
@@ -659,28 +526,212 @@ class Paint:
                                                            width=self.pen_size1.get(), fill=self.color_fills)
 
     def moving_parallelogram(self, event):
-        # Modify parallelogram x1, y1 coordinates
         self.canvas.coords(self.parallelogram_id, self.parallelogram_x0, self.parallelogram_y0,
                            int(self.parallelogram_x0) + 30, event.y, event.x, event.y, int(event.x) - 30,
                            self.parallelogram_y0)
 
     def stop_parallelogram(self, event):
-        # Modify parallelogram x1, y1 coordinates
         self.canvas.coords(self.parallelogram_id, self.parallelogram_x0, self.parallelogram_y0,
                            int(self.parallelogram_x0) + 30, event.y, event.x, event.y, int(event.x) - 30,
                            self.parallelogram_y0)
         self.stack.append(self.parallelogram_id)
         self.stack.append('$')
 
-    def pencil(self):
-        self.canvas.config(cursor="arrow")
-        self.canvas.unbind("<Button-1>")
-        self.canvas.unbind("<ButtonRelease-1>")
-        self.canvas.unbind("<B1-Motion>")
-        self.pen_color = 'black'
-        self.canvas.bind("<B1-Motion>", self.paint_app)
-        self.canvas.bind("<ButtonRelease-1>", self.reset)
+    # ZOOM USING BUTTONS
+    def zoom_control(self, e):  # For Zoom in and Zoom out
+        try:
+            if e.delta > 0:
+                self.canvas.scale("all", e.x, e.y, 1.1, 1.1)
+            elif e.delta < 0:
+                self.canvas.scale("all", e.x, e.y, 0.9, 0.9)
+        except :
+            if e == 1:
+                self.canvas.scale("all", 550, 350, 1.1, 1.1)
+            else:
+                self.canvas.scale("all", 550, 350, 0.9, 0.9)
+                
+    # ZOOM USING SCROLLING
+    def zoom_canvas(self, _):
+        if _.delta > 0:
+            self.canvas.scale("all", _.x, _.y, 1.1, 1.1)
+        elif _.delta < 0:
+            self.canvas.scale("all", _.x, _.y, 0.9, 0.9)
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
+    # SELECTING REGION FOR CUT, COPY, PASTE
+
+    def select_region(self):
+        self.canvas.config(cursor="@Mario.cur")
+        try:
+            self.draw_selection()
+
+            if self.rect_id:
+                self.rect_id = self.canvas.create_rectangle(self.rect_x0, self.rect_y0, self.rect_x0, self.rect_y0,
+                                                            dash=(4, 2), outline="black")
+
+            def select_region_final(_):
+                self.temp.append(self.rect_id)
+
+            self.canvas.bind('<ButtonRelease-1>', select_region_final)
+            self.canvas.bind('<Button-3>', self.delete)
+        except BaseException:
+            print("Select region error")
+
+    def delete(self, _):
+        self.canvas.delete(self.rect_id)
+
+    def start_selection(self, event):
+        # Convert mouse screen x0,y0 coordinates to canvas coordinates
+        self.rect_x0 = self.canvas.canvasx(event.x)
+        self.rect_y0 = self.canvas.canvasy(event.y)
+        # Create rectangle
+        if not self.rect_id:
+            self.rect_id = self.canvas.create_rectangle(self.rect_x0, self.rect_y0, self.rect_x0, self.rect_y0,
+                                                        dash=(4, 2), outline="black")
+
+    def moving_selection(self, event):
+        self.rect_x1 = self.canvas.canvasx(event.x)
+        self.rect_y1 = self.canvas.canvasy(event.y)
+
+        x, y = self.canvas.winfo_width(), self.canvas.winfo_height()
+        if event.x > 0.9 * x:
+            self.canvas.xview_scroll(1, 'units')
+        elif event.x < 0.1 * x:
+            self.canvas.xview_scroll(-1, 'units')
+        if event.y > 0.9 * y:
+            self.canvas.yview_scroll(1, 'units')
+        elif event.y < 0.1 * y:
+            self.canvas.yview_scroll(-1, 'units')
+
+        # expand rectangle as you drag the mouse
+        self.canvas.coords(self.rect_id, self.rect_x0, self.rect_y0, self.rect_x1, self.rect_y1)
+
+    def delete_selected_region(self, _):  # To delete selected region
+        self.canvas.itemconfig(self.rect_id, fill=self.eraser_color, width=0.00001, outline=self.eraser_color)
+        self.reset_rectangle()
+
+    def draw_selection(self):
+        self.canvas.bind("<Button-1>", self.start_selection)
+        self.canvas.bind("<ButtonRelease-1>", self.stop_rect)
+        self.canvas.bind("<B1-Motion>", self.moving_selection)
+        self.canvas.bind(self.place)
+        self.canvas.bind('<Delete>', self.delete_selected_region)
+        self.canvas.bind("<ButtonRelease-1>", self.reset)
+        
+    # FOR SNIPPING
+    def snipping(self):
+        try:
+            self.canvas.delete(self.temp.pop())
+            time.sleep(0.0000001)
+            root.update()
+            x1 = root.winfo_rootx() + self.canvas.winfo_x()
+            y1 = root.winfo_rooty() + self.canvas.winfo_y()
+            file = filedialog.asksaveasfilename(initialdir="Screen_shots", title="Screen shot save",
+                                                filetypes=[("PNG File", "*.png")])
+            if file:
+                ImageGrab.grab().crop(
+                    (x1 + self.rect_x0, y1 + self.rect_y0, x1 + self.rect_x1, y1 + self.rect_y1)).save(file + ".png")
+            self.reset_rectangle()
+
+        except BaseException:
+            messagebox.showerror("Selection Error",
+                                 "First select a region by clicking the selection tool', then take screen shot")
+            
+    def reset_rectangle(self): 
+        self.rect_x0 = 0
+        self.rect_y0 = 0
+        self.rect_y1 = 0
+        self.rect_x1 = 0
+        self.temp = []
+
+    # METHODS FOR FILE MENU
+    def new(self):
+        take = messagebox.askyesno("New Window Conformation", "Do you really want to open new Window?")
+        root.title("Doodle" + "-----" + "New Window")
+        if take is True:
+            self.canvas.delete("all")
+
+    def open_file(self):
+        try:
+            filename = filedialog.askopenfilename(initialdir="/",
+                                                  filetypes=(("jpeg files", "*.jpg"), ("png files", "*.png")))
+            image = Image.open(filename)
+            image.save("Temp.png", "png")
+            self.file_to_open = PhotoImage(file="Temp.png")
+            self.canvas.delete("all")
+            self.canvas.create_image(3, 3, image=self.file_to_open, anchor=NW)
+        except AttributeError:
+            pass
+
+    def save_file(self, _=None):
+        file = filedialog.asksaveasfilename(initialdir="/", filetypes=(
+            ("jpeg files", "*.jpg"), ("png files", "*.png")))
+        if file:
+            x = root.winfo_rootx() + self.canvas.winfo_x()
+            y = root.winfo_rooty() + self.canvas.winfo_y()
+            x1 = x + self.canvas.winfo_width()
+            y1 = y + self.canvas.winfo_height()
+            ImageGrab.grab().crop((x, y, x1, y1)).save(file + '.png')
+            ImageGrab.grab().crop((x, y, x1, y1)).save(file + '.jpg')
+
+    @staticmethod
+    def quit():
+        take = messagebox.askyesno("Quit Confirmation", "Do you really want to quit?")
+        if take is True:
+            root.quit()
+            
+    # METHODS RELATED TO EDIT MENU
+    def undo(self, _=None):
+        try:
+            self.item = self.stack.pop()
+
+            if self.item == '$':  # For undoing figures like rectangle, oval, circle, square, straight lines.
+                self.item = self.stack.pop()
+                self.canvas.delete(self.item)
+            elif self.item == '#':
+                self.item = self.stack.pop()
+                while self.item != '#' and self.item != '$':
+                    self.canvas.delete(self.item)
+                    if len(self.stack) == 0:
+                        break
+                    self.item = self.stack.pop()
+                if self.item == '#' or self.item == '$':
+                    self.stack.append(self.item)
+        except IndexError:
+            pass
+
+    def cut(self, _=None):  # Cut the selected region
+        self.copy(1)
+        self.delete_selected_region(False)
+        self.canvas.unbind("<B1-Motion>")
+
+    def copy(self, _=None):  # Copy the selected region
+        try:
+            self.canvas.itemconfig(self.temp[len(self.temp) - 1], outline=self.eraser_color)
+            time.sleep(0.0001)
+            self.canvas.update()
+            x1 = root.winfo_rootx() + self.canvas.winfo_x()
+            y1 = root.winfo_rooty() + self.canvas.winfo_y()
+            ImageGrab.grab().crop((x1 + self.rect_x0, y1 + self.rect_y0, x1 + self.rect_x1, y1 + self.rect_y1)).save(
+                "cutting.png")
+            self.counter += 1
+            self.reset_rectangle()
+        except BaseException:
+            messagebox.showerror("Cut error")
+
+    def paste(self, _=None):  # Paste the region keep in clipboard
+        messagebox.showinfo('Paste', ''' 📣 Please set the mouse pointer then click the left button 📣''')
+        self.cut_copy_img.append(ImageTk.PhotoImage(Image.open("cutting.png")))
+        self.canvas.bind('<Button-1>', self.place)
+        self.canvas.bind("<Motion>", self.coordinates)
+        self.canvas.bind('<Button-3>', self.cancel)
+
+    def place(self, event):
+        take = self.canvas.create_image(event.x, event.y, image=self.cut_copy_img[self.counter])
+        self.stack.append(take)
+        self.stack.append('$')
+
+    # METHODS RELATED TO TEXT MENU
     def add_text(self):
         self.top = tk.Toplevel()
         self.top.geometry('310x70')
@@ -710,142 +761,7 @@ class Paint:
         self.canvas.unbind('<Button-1>')
         self.canvas.unbind('<Button-3>')
 
-    def zoom_control(self, e):  # For Zoom in and Zoom out
-        try:
-            if e.delta > 0:
-                self.canvas.scale("all", e.x, e.y, 1.1, 1.1)
-            elif e.delta < 0:
-                self.canvas.scale("all", e.x, e.y, 0.9, 0.9)
-        except :
-            if e == 1:
-                self.canvas.scale("all", 550, 350, 1.1, 1.1)
-            else:
-                self.canvas.scale("all", 550, 350, 0.9, 0.9)
-
-    def tips(self):
-        self.top = tk.Toplevel()
-        self.top.title("ABOUT")
-        self.top.geometry("1350x750")
-        self.top.config(bg="pink")
-        self.img_label_all = []
-        self.des_label_all = []
-        self.about_img.clear()
-        for i in range(4):
-            self.about_img.append(i)
-            self.img_label_all.append(i)
-            self.des_label_all.append(i)
-        self.about_img[0] = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Menu_bar/colours.png").resize((140, 160), Image.ANTIALIAS))
-        self.about_img[1] = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Menu_bar/width_box.png").resize((140, 160), Image.ANTIALIAS))
-        self.about_img[2] = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Menu_bar/tools.png").resize((140, 160), Image.ANTIALIAS))
-        self.about_img[3] = ImageTk.PhotoImage(
-            Image.open("Utils/Pictures/Menu_bar/menu_bar.jpeg").resize((160, 160), Image.ANTIALIAS))
-
-        self.heading = Label(self.top, text="All about Tools", font=("Arial", 30, "bold", "italic"), fg="black",
-                             bg="pink")
-        self.heading.place(x=550, y=10)
-
-        self.img_label_all[0] = Label(self.top, image=self.about_img[0], relief=RAISED, bd=3)
-        self.img_label_all[0].place(x=20, y=40)
-        self.des_label_all[0] = Label(self.top, text="Color palette and eraser", font=("Arial", 30, "bold"), fg="black",
-                                      bg="pink")
-        self.des_label_all[0].place(x=200, y=100)
-
-        self.img_label_all[1] = Label(self.top, image=self.about_img[1], relief=RAISED, bd=3)
-        self.img_label_all[1].place(x=1130, y=170)
-        self.des_label_all[1] = Label(self.top, text="Changes the size of your brush and shapes",
-                                      font=("Arial", 30, "bold"), fg="black", bg="pink")
-        self.des_label_all[1].place(x=220, y=220)
-
-        self.img_label_all[2] = Label(self.top, image=self.about_img[2], relief=RAISED, bd=3)
-        self.img_label_all[2].place(x=20, y=290)
-        self.des_label_all[2] = Label(self.top, text="This box contains all essential tools and shapes",
-                                      font=("Arial", 30, "bold"), fg="black", bg="pink")
-        self.des_label_all[2].place(x=200, y=340)
-
-        self.img_label_all[3] = Label(self.top, image=self.about_img[3], relief=RAISED, bd=3)
-        self.img_label_all[3].place(x=1150, y=390)
-        self.des_label_all[3] = Label(self.top, text="Menu bar can be accessed through shortcuts",
-                                      font=("Arial", 30, "bold"), fg="black", bg="pink")
-        self.des_label_all[3].place(x=220, y=440)
-
-    def select_region(self):  # For select a region
-        try:
-            self.draw_selection()
-
-            if self.rect_id:
-                self.rect_id = self.canvas.create_rectangle(self.rect_x0, self.rect_y0, self.rect_x0, self.rect_y0,
-                                                            dash=(4, 2), outline="black")
-
-            def select_region_final(_):
-                self.temp.append(self.rect_id)
-
-            self.canvas.bind('<ButtonRelease-1>', select_region_final)
-            self.canvas.bind('<Button-3>', self.delete)
-        except BaseException:
-            print("Select region error")
-
-    def delete(self, _):
-        self.canvas.delete(self.rect_id)
-
-    def start_selection(self, event):
-        # Translate mouse screen x0,y0 coordinates to canvas coordinates
-        self.rect_x0 = self.canvas.canvasx(event.x)
-        self.rect_y0 = self.canvas.canvasy(event.y)
-        # Create rectangle
-        if not self.rect_id:
-            self.rect_id = self.canvas.create_rectangle(self.rect_x0, self.rect_y0, self.rect_x0, self.rect_y0,
-                                                        dash=(4, 2), outline="black")
-
-    def moving_selection(self, event):
-        self.rect_x1 = self.canvas.canvasx(event.x)
-        self.rect_y1 = self.canvas.canvasy(event.y)
-
-        x, y = self.canvas.winfo_width(), self.canvas.winfo_height()
-        if event.x > 0.9 * x:
-            self.canvas.xview_scroll(1, 'units')
-        elif event.x < 0.1 * x:
-            self.canvas.xview_scroll(-1, 'units')
-        if event.y > 0.9 * y:
-            self.canvas.yview_scroll(1, 'units')
-        elif event.y < 0.1 * y:
-            self.canvas.yview_scroll(-1, 'units')
-
-        # expand rectangle as you drag the mouse
-        self.canvas.coords(self.rect_id, self.rect_x0, self.rect_y0, self.rect_x1, self.rect_y1)
-
-    def delete_selected_region(self, _):  # For delete selected region
-        self.canvas.itemconfig(self.rect_id, fill=self.eraser_color, width=0.00001, outline=self.eraser_color)
-        self.reset_rectangle()
-
-    def draw_selection(self):
-        self.canvas.bind("<Button-1>", self.start_selection)
-        self.canvas.bind("<ButtonRelease-1>", self.stop_rect)
-        self.canvas.bind("<B1-Motion>", self.moving_selection)
-        self.canvas.bind(self.place)
-        self.canvas.bind('<Delete>', self.delete_selected_region)
-        self.canvas.bind("<ButtonRelease-1>", self.reset)
-
-    def screen_shot(self):
-        try:
-            self.canvas.delete(self.temp.pop())
-            time.sleep(0.0000001)
-            root.update()
-            x1 = root.winfo_rootx() + self.canvas.winfo_x()
-            y1 = root.winfo_rooty() + self.canvas.winfo_y()
-            file = filedialog.asksaveasfilename(initialdir="Screen_shots", title="Screen shot save",
-                                                filetypes=[("PNG File", "*.png")])
-            if file:
-                ImageGrab.grab().crop(
-                    (x1 + self.rect_x0, y1 + self.rect_y0, x1 + self.rect_x1, y1 + self.rect_y1)).save(file + ".png")
-            self.reset_rectangle()
-
-        except BaseException:
-            messagebox.showerror("Selection Error",
-                                 "First select a region by clicking the selection tool', then take screen shot")
-
+    # METHODS RELATED TO HELP MENU
     @staticmethod
     def about():
 
@@ -854,12 +770,66 @@ class Paint:
                             " Cursor mode or Gesture mode using hand movements. Developed by Lokeswar P, Savithasini K"
                             " and Logapriya G - students of MIT, Chennai")
 
+    def tips(self):
+        self.top = tk.Toplevel()
+        self.top.title("ABOUT")
+        self.top.geometry("1350x750")
+        self.top.wm_iconbitmap('Utils/Pictures/Icon/doodle.ico')
+        self.img_label_all = []
+        self.about_img.clear()
+        self.about_img = ImageTk.PhotoImage(
+            Image.open("Utils/Pictures/Menu_bar/about_gesture.png").resize((1350, 700), Image.ANTIALIAS))
+        self.img_label_all = Label(self.top, image=self.about_img, relief=RAISED, bd=3)
+        self.img_label_all.place(x=0, y=0)
+
+    # METHODS RELATED TO MODE
+    def show_frame(self):
+        if self.mode == "Gesture mode":
+            _, frame = self.cap.read()
+            self.fc += 1
+            TIME = time.time() - self.start_time
+            if TIME >= self.display_time:
+                self.FPS = self.fc / TIME
+                self.fc = 0
+                self.start_time = time.time()
+
+            fps_disp = "FPS: " + str(self.FPS)[:5]
+            self.fps['text'] = f'{fps_disp}'
+            if _:
+                frame = cv2.flip(frame, 1)
+                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img = PIL.Image.fromarray(cv2image)
+                imgtk = ImageTk.PhotoImage(image=img)
+                lmain.imgtk = imgtk
+                lmain.configure(image=imgtk)
+                lmain.after(1, self.show_frame)
+                self.canvas.config(width=900, height=620)
+
+        else:
+            return
+
+    def close(self):
+        if self.mode == "Cursor mode":
+            self.cap.release()
+            lmain.config(image="")
+            self.canvas.config(width=1000, height=600)
+        else:
+            return
+
+    def gesture_mode(self):
+        self.mode = "Gesture mode"
+        width, height = 300, 275
+        self.cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        lmain.pack(side="left")
+        lmain.place(x=1000, y=0)
+        self.show_frame()
+
+    def cursor_mode(self):
+        self.mode = "Cursor mode"
+        self.close()    
+
 
 paint = Paint()
 root.mainloop()
-
-
-
-
-
-
