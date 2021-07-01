@@ -31,7 +31,8 @@ install python 3.8.10
 ```sh
 pip install -r requirement.txt
 ```
-![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/124113328-f1ad3580-da88-11eb-9771-655b721d9238.gif)
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/124163758-89c51200-dabd-11eb-9376-8488180fa7a5.gif)
+
 
 ## Usage
 
