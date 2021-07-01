@@ -5,9 +5,14 @@ A Paint app built using Tkinter package in python where you can draw either usin
 You can draw using two modes:
 - Cursor mode
 - Gesture mode
-
+                                            
+                                              CURSOR MODE
+                                             
 ![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/123977612-c4a34900-d9dc-11eb-8c71-202ad3aab24b.gif)
 
+                                             GESTURE MODE
+                                             
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/124120340-49e83580-da91-11eb-8d57-b3609e6f9af7.gif)
 
 ## Supported platform
 - Windows 64-bit
