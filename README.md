@@ -1,7 +1,7 @@
 # Doodle - Paint application
 
 ## Description
-A Paint app built using Tkinter package in python where you can draw either using gestures recognition by integrating OpenCV or with cursor.
+A Paint app built using Tkinter package in python where you can draw either using gesture recognition by integrating OpenCV or with cursor.
 You can draw using two modes:
 - Cursor mode
 - Gesture mode
