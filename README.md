@@ -20,8 +20,8 @@ You can draw using two modes:
 - Python 3.8.x(autopy is not available in version 3.9.x)
 
 ### Release has been published
-To run without downloading the code, checkout the release section.
-https://github.com/lokeswar-28/Doodle-Paint-App/releases
+To run without downloading the code, checkout the release section
+[https://github.com/lokeswar-28/Doodle-Paint-App/releases]
 
 ## Installation
 install python 3.8.10
