@@ -21,6 +21,7 @@ You can draw using two modes:
 
 ### Release has been published
 To run without downloading the code, checkout the release section.
+https://github.com/lokeswar-28/Doodle-Paint-App/releases
 
 ## Installation
 install python 3.8.10
