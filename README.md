@@ -19,6 +19,9 @@ You can draw using two modes:
 - Windows 64-bit
 - Python 3.8.x(autopy is not available in version 3.9.x)
 
+### Release has been published
+To run without downloading the code, checkout the release section.
+
 ## Installation
 install python 3.8.10
 [https://www.python.org/downloads/release/python-3810/]
