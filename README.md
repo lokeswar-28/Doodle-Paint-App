@@ -26,8 +26,7 @@ install python 3.8.10
 - User can install all the packages from requirement.txt
 
 - Open cmd with the path where you want install the package and give the following command
-
-- install requirement.txt
+- 
 ```sh
 pip install -r requirement.txt
 ```
