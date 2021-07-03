@@ -13,7 +13,8 @@ You can draw using two modes:
 
                                              GESTURE MODE
                                              
-![ezgif com-gif-maker](https://user-images.githubusercontent.com/80261018/124120340-49e83580-da91-11eb-8d57-b3609e6f9af7.gif)
+![ezgif com-gif-maker (1)](https://user-images.githubusercontent.com/80261018/124353123-33bdaf00-dc22-11eb-9911-44fd7fdf65b1.gif)
+
 
 ## Supported platform
 - Windows 64-bit
